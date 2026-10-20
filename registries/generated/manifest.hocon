@@ -1,0 +1,6 @@
+{
+
+    "generated/hitl_document_redaction_obfuscation_network.hocon": true,
+
+    "generated/redaction_pipeline.hocon": true,
+}

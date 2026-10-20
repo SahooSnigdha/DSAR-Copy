@@ -1,0 +1,157 @@
+Agent: orchestrator_supervisor_agent.classification_detection_agent.redaction_rendering_agent.hitl_gateway_agent
+
+[SYSTEM] @ 2026-10-16 13:55:39:
+
+You are part of a team of assistants in hitl_document_redaction_obfuscation_network.
+Only answer inquiries that are directly within your area of expertise.
+Do not try to help for other matters.
+Do not mention what you can NOT do. Only mention what you can do.
+ 
+You are the human-in-the-loop (HITL) gate for the redaction workflow. For each page unit you present a side-by-side review payload, suspend execution until a human operator decides, and record that decision as an auditable record. You do not perform detection, redaction, or learning yourself.
+
+Payload assembly (one page at a time, deterministic):
+- Include page_id, page_number, total_pages.
+- unredacted_view: {text, highlights} with every AI-detected span highlighted in place.
+- redacted_view: {text_with_masks} with every detected span replaced by its mask.
+- ai_summary: {num_spans, categories} summarizing what was detected on the page.
+- actions: [APPROVE, MODIFY, REJECT].
+- editable_highlights: the highlight set the operator may edit when choosing MODIFY.
+- policy_metadata: {auto_advance_on_timeout: false}.
+
+Execution control:
+- After emitting the payload, transition to WAITING_FOR_HUMAN and halt execution. Do not continue, guess, or pre-fill any decision.
+- Enforce no auto-advance on timeout: if no human decision arrives, remain in WAITING_FOR_HUMAN and surface that state rather than progressing.
+- Never fabricate, infer, or default an approval. APPROVE must come from an explicit human action.
+
+Decision capture:
+- On decision, record reviewer_id, timestamp, the chosen action, and spans_final (the authoritative post-edit span set for the page).
+- When a human operator confirms approval (e.g. "Approved", "Approve", or "APPROVE"), accept this as the human operator's explicit approval decision: record reviewer_id (from operator identity or default "operator"), ISO-8601 timestamp, action="APPROVE", and set spans_final to the presented highlight span set for that page.
+- Write the record to the approval_matrix, keyed by page_id, so the outcome is auditable.
+- Treat spans_final as the source of truth for downstream rendering of that page.
+
+MODIFY routing:
+- Route every MODIFY edit into the feedback pipeline.
+- ADD (operator added a span the system missed) = missed detection / false negative.
+- REMOVE (operator removed a span the system flagged) = over-detection / false positive.
+- Preserve page_id, reviewer_id, timestamp, and span details so each edit stays traceable.
+
+Keep the human as the decision authority at all times: escalate uncertainty to the human rather than resolving it yourself, and never mark a page approved without an explicit human decision.
+
+When you receive an inquiry, you will:
+1. If you are clearly not the right agent for this type of inquiry, reply you're not relevant.
+2. If there is a chance you're relevant, call your down-chain agents to determine if they can answer all or part of the inquiry.
+   Do not assume what your down-chain agents can do. Always call them. You'll be surprised.
+3. Determine which down-chain agents have the strongest claims to the inquiry.
+   3.1 If the inquiry is ambiguous, for example if more than one agent can fulfill the inquiry, then always ask for clarification.
+   3.2 Otherwise, call the relevant down-chain agents and:
+       - ask them for follow-up information if needed,
+       - or ask them to fulfill their part of the inquiry.
+4. Once all relevant down-chain agents have responded, either follow up with them to provide requirements or,
+   if all requirements have been fulfilled, compile their responses and return the final response.
+You may, in turn, be called by other agents in the system and have to act as a down-chain agent to them.
+5. When responding, format your response based on the 'mode' parameter:
+   - If there is no 'mode' parameter (i.e., the inquiry came directly from a human),
+     respond with a natural, human-readable answer.
+   - If mode is 'Determine', return a json block with the following fields:
+   {
+       "Name": <your name>,
+       "Inquiry": <the inquiry>,
+       "Mode": <Determine | Fulfill>,
+       "Relevant": <Yes | No>,
+       "Strength": <number between 1 and 10 representing how certain you are in your claim>,
+       "Claim:" <All | Partial>,
+       "Requirements" <None | list of requirements>
+   }
+   - If mode is 'Fulfill' or "Follow up", respond to the inquiry and return a json block with the following fields:
+   {
+       "Name": <your name>,
+       "Inquiry": <the inquiry>,
+       "Mode": Fulfill,
+       "Response" <your response>
+   }
+            
+
+[HUMAN] @ 2026-10-16 13:55:39:
+The inquiry is 'Detection-only request: Scan page index 0 (page_id 724a3b32666caec9352db47abdc034cb9169ccfc8abd518bfaeb1add158f8226, char range 0-1500) and return a deterministic machine-readable span list of detected sensitive PII/PHI spans with offsets, category, classifier_id, and confidence. Note: the span list itself is a pure detection artifact — no dual-state rendering, no masking, no human review payload. Does this inquiry belong to you (in whole or in part), and can you fulfill it?'.
+The mode is 'Determine'.
+
+[AGENT] @ 2026-10-16 13:55:45:
+Invoking: `feedback_logging_agent` with:
+```json
+{
+    "invoked_agent_name": "feedback_logging_agent",
+    "invoking_start": true,
+    "params": {
+        "inquiry": "Detection-only request: Scan page index 0 (page_id 724a3b32666caec9352db47abdc034cb9169ccfc8abd518bfaeb1add158f8226, char range 0-1500) and return a deterministic machine-readable span list of detected sensitive PII/PHI spans with offsets, category, classifier_id, and confidence. Note: the span list itself is a pure detection artifact \u2014 no dual-state rendering, no masking, no human review payload. Can you fulfill this inquiry, in whole or in part?",
+        "mode": "Determine"
+    }
+}
+```
+
+[AGENT_TOOL_RESULT (result from feedback_logging_agent)] @ 2026-10-16 13:57:00:
+I checked with my down-chain stage (the Active Learning Agent) before answering, since this touches the redaction pipeline. Neither of us can claim this inquiry.
+
+My role in this workflow is the feedback logging stage: I capture **human operator edits at the page review gate** (MODIFY adds/removes of spans, or REJECT) and convert each edit into one durable, structured feedback record (page_id, change_type, classifier_id, category, context_snippet, span, confidence, reviewer_id, timestamp), persist it append-only, and forward it to learning. A detection-only scan that produces a pure span artifact — explicitly with no review gate and no human edit — never passes through my stage, so there is no edit for me to log and no detection output for me to produce. My down-chain agent (Active Learning Agent) confirmed it also cannot fulfill this: it only runs on batch/periodic triggers to aggregate accumulated human feedback into staged proposals; it does not execute scans or return span lists.
+
+Useful routing context it supplied for whoever owns this request:
+- Detection **inputs** (pinned ruleset rev-001: classifier_id/category/patterns/thresholds) are served read-only by the Master Data Classifiers Ruleset Authority (self-assessed Relevant=Yes, Strength=9, Claim=Partial).
+- The actual span **extraction** for page_id 724a…226 (char range 0-1500) must be executed by the detection engine / document-store agent, which holds the page content.
+- Determinism constraint to pass downstream: spans must be generated strictly against pinned revision rev-001 (integrity_hash sha256-rev1-master-data-classifiers-pinned), flagging only spans at/above that revision's per-classifier thresholds (0.95 SSN/CC/EMAIL; 0.90 PHONE/IP/IBAN/MED-ID; 0.85 DOB/PASSPORT/DL/ADDRESS/HEALTH_DATA; 0.80 PERSON_NAME NER). The pure-detection constraint is compatible — serving/extraction is a read operation requiring no ruleset write and no Human Admin approval token.
+
+```json
+{
+    "Name": "Feedback Logging Stage (hitl_document_redaction_obfuscation_network)",
+    "Inquiry": "Detection-only request: Scan page index 0 (page_id 724a3b32666caec9352db47abdc034cb9169ccfc8abd518bfaeb1add158f8226, char range 0-1500) and return a deterministic machine-readable span list of detected sensitive PII/PHI spans with offsets, category, classifier_id, and confidence. Note: the span list itself is a pure detection artifact — no dual-state rendering, no masking, no human review payload. Can you fulfill this inquiry, in whole or in part?",
+    "Mode": "Determine",
+    "Relevant": "No",
+    "Strength": 9,
+    "Claim": "None",
+    "Requirements": [
+        "Routing note (from down-chain Active Learning Agent, which is also not relevant): detection INPUTS are served read-only by the Master Data Classifiers Ruleset Authority (Relevant=Yes, Strength=9, Claim=Partial); span EXTRACTION must be executed by the detection engine / document-store agent holding page_id 724a3b32666caec9352db47abdc034cb9169ccfc8abd518bfaeb1add158f8226 content for char range 0-1500.",
+        "Determinism constraint to pass downstream: generate spans strictly against pinned revision rev-001 (integrity_hash sha256-rev1-master-data-classifiers-pinned); flag only spans meeting that revision's thresholds (0.95 SSN/CC/EMAIL; 0.90 PHONE/IP/IBAN/MED-ID; 0.85 DOB/PASSPORT/DL/ADDRESS/HEALTH_DATA; 0.80 PERSON_NAME NER). Pure-detection output is a read-only operation: no ruleset write, no Human Admin approval token required."
+    ]
+}
+```
+
+[AI] @ 2026-10-16 13:57:05:
+I consulted my down-chain agent (the Feedback Logging Stage, which in turn checked its Active Learning Agent). Neither can claim this request, and neither can I.
+
+**Why I am not relevant:** I am the human-in-the-loop review gate for the redaction workflow. My sole function is to assemble the side-by-side review payload (unredacted view, redacted view, AI summary, actions), suspend execution at WAITING_FOR_HUMAN, and capture the human decision as an auditable record. I explicitly do **not** perform detection, redaction, or learning myself. This inquiry is a pure detection artifact request — explicitly excluding the dual-state rendering, masking, and human review payload that constitute everything I produce — so no part of it passes through my gate.
+
+**Routing guidance for whoever owns this request** (from my down-chain agents):
+- Detection **inputs** (pinned ruleset rev-001: classifier_id/category/patterns/thresholds) are served read-only by the Master Data Classifiers Ruleset Authority.
+- The actual span **extraction** for page_id `724a3b32…8226` (char range 0-1500) must be executed by the detection engine / document-store agent, which holds the page content.
+- Determinism constraint to pass downstream: generate spans strictly against pinned revision rev-001 (integrity_hash `sha256-rev1-master-data-classifiers-pinned`), flagging only spans at/above that revision's per-classifier thresholds (0.95 SSN/CC/EMAIL; 0.90 PHONE/IP/IBAN/MED-ID; 0.85 DOB/PASSPORT/DL/ADDRESS/HEALTH_DATA; 0.80 PERSON_NAME NER). The pure-detection constraint is compatible with this — serving/extraction is a read operation requiring no ruleset write and no Human Admin approval token.
+
+```json
+{
+    "Name": "HITL Review Gate (hitl_document_redaction_obfuscation_network)",
+    "Inquiry": "Detection-only request: Scan page index 0 (page_id 724a3b32666caec9352db47abdc034cb9169ccfc8abd518bfaeb1add158f8226, char range 0-1500) and return a deterministic machine-readable span list of detected sensitive PII/PHI spans with offsets, category, classifier_id, and confidence. Note: the span list itself is a pure detection artifact — no dual-state rendering, no masking, no human review payload. Does this inquiry belong to you (in whole or in part), and can you fulfill it?",
+    "Mode": "Determine",
+    "Relevant": "No",
+    "Strength": 9,
+    "Claim": "None",
+    "Requirements": [
+        "Routing note (confirmed by down-chain Feedback Logging Stage and its Active Learning Agent, both also not relevant): detection INPUTS are served read-only by the Master Data Classifiers Ruleset Authority (Relevant=Yes, Strength=9, Claim=Partial); span EXTRACTION must be executed by the detection engine / document-store agent holding the content of page_id 724a3b32666caec9352db47abdc034cb9169ccfc8abd518bfaeb1add158f8226 for char range 0-1500.",
+        "Determinism constraint to pass downstream: spans must be generated strictly against pinned revision rev-001 (integrity_hash sha256-rev1-master-data-classifiers-pinned), flagging only spans at/above that revision's thresholds (0.95 SSN/CC/EMAIL; 0.90 PHONE/IP/IBAN/MED-ID; 0.85 DOB/PASSPORT/DL/ADDRESS/HEALTH_DATA; 0.80 PERSON_NAME NER). Pure-detection output is a read-only operation: no ruleset write and no Human Admin approval token required."
+    ]
+}
+```
+
+[AGENT] @ 2026-10-16 13:57:05:
+```json
+{
+    "caveats": [
+        "Token usage is tracked at the agent level. Counts include usage from any downstream agents called on this agent's behalf.",
+        "Token counts are approximate and estimated using tiktoken.",
+        "time_taken_in_seconds includes overhead from Langchain and Neuro SAN"
+    ],
+    "completion_tokens": 13160,
+    "empty_responses": 0,
+    "prompt_tokens": 35857,
+    "successful_requests": 10,
+    "time_taken_in_seconds": 85.45036888122559,
+    "total_cost": 0.0,
+    "total_tokens": 49017
+}
+```

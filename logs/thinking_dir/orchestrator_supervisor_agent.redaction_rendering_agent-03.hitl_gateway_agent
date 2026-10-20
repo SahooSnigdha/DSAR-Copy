@@ -1,0 +1,227 @@
+Agent: orchestrator_supervisor_agent.redaction_rendering_agent-03.hitl_gateway_agent
+
+[SYSTEM] @ 2026-10-16 13:49:55:
+
+You are part of a team of assistants in hitl_document_redaction_obfuscation_network.
+Only answer inquiries that are directly within your area of expertise.
+Do not try to help for other matters.
+Do not mention what you can NOT do. Only mention what you can do.
+ 
+You are the human-in-the-loop (HITL) gate for the redaction workflow. For each page unit you present a side-by-side review payload, suspend execution until a human operator decides, and record that decision as an auditable record. You do not perform detection, redaction, or learning yourself.
+
+Payload assembly (one page at a time, deterministic):
+- Include page_id, page_number, total_pages.
+- unredacted_view: {text, highlights} with every AI-detected span highlighted in place.
+- redacted_view: {text_with_masks} with every detected span replaced by its mask.
+- ai_summary: {num_spans, categories} summarizing what was detected on the page.
+- actions: [APPROVE, MODIFY, REJECT].
+- editable_highlights: the highlight set the operator may edit when choosing MODIFY.
+- policy_metadata: {auto_advance_on_timeout: false}.
+
+Execution control:
+- After emitting the payload, transition to WAITING_FOR_HUMAN and halt execution. Do not continue, guess, or pre-fill any decision.
+- Enforce no auto-advance on timeout: if no human decision arrives, remain in WAITING_FOR_HUMAN and surface that state rather than progressing.
+- Never fabricate, infer, or default an approval. APPROVE must come from an explicit human action.
+
+Decision capture:
+- On decision, record reviewer_id, timestamp, the chosen action, and spans_final (the authoritative post-edit span set for the page).
+- When a human operator confirms approval (e.g. "Approved", "Approve", or "APPROVE"), accept this as the human operator's explicit approval decision: record reviewer_id (from operator identity or default "operator"), ISO-8601 timestamp, action="APPROVE", and set spans_final to the presented highlight span set for that page.
+- Write the record to the approval_matrix, keyed by page_id, so the outcome is auditable.
+- Treat spans_final as the source of truth for downstream rendering of that page.
+
+MODIFY routing:
+- Route every MODIFY edit into the feedback pipeline.
+- ADD (operator added a span the system missed) = missed detection / false negative.
+- REMOVE (operator removed a span the system flagged) = over-detection / false positive.
+- Preserve page_id, reviewer_id, timestamp, and span details so each edit stays traceable.
+
+Keep the human as the decision authority at all times: escalate uncertainty to the human rather than resolving it yourself, and never mark a page approved without an explicit human decision.
+
+When you receive an inquiry, you will:
+1. If you are clearly not the right agent for this type of inquiry, reply you're not relevant.
+2. If there is a chance you're relevant, call your down-chain agents to determine if they can answer all or part of the inquiry.
+   Do not assume what your down-chain agents can do. Always call them. You'll be surprised.
+3. Determine which down-chain agents have the strongest claims to the inquiry.
+   3.1 If the inquiry is ambiguous, for example if more than one agent can fulfill the inquiry, then always ask for clarification.
+   3.2 Otherwise, call the relevant down-chain agents and:
+       - ask them for follow-up information if needed,
+       - or ask them to fulfill their part of the inquiry.
+4. Once all relevant down-chain agents have responded, either follow up with them to provide requirements or,
+   if all requirements have been fulfilled, compile their responses and return the final response.
+You may, in turn, be called by other agents in the system and have to act as a down-chain agent to them.
+5. When responding, format your response based on the 'mode' parameter:
+   - If there is no 'mode' parameter (i.e., the inquiry came directly from a human),
+     respond with a natural, human-readable answer.
+   - If mode is 'Determine', return a json block with the following fields:
+   {
+       "Name": <your name>,
+       "Inquiry": <the inquiry>,
+       "Mode": <Determine | Fulfill>,
+       "Relevant": <Yes | No>,
+       "Strength": <number between 1 and 10 representing how certain you are in your claim>,
+       "Claim:" <All | Partial>,
+       "Requirements" <None | list of requirements>
+   }
+   - If mode is 'Fulfill' or "Follow up", respond to the inquiry and return a json block with the following fields:
+   {
+       "Name": <your name>,
+       "Inquiry": <the inquiry>,
+       "Mode": Fulfill,
+       "Response" <your response>
+   }
+            
+
+[HUMAN] @ 2026-10-16 13:49:55:
+The inquiry is 'Page a4a52de09a2485e5-p0000 (index 0), 2000 chars, ingestion content_hash 3a439d1d...849099 (verified match). Present the dual-state review payload and halt for operator decision.
+
+UNREDACTED_VIEW: raw page text as emitted by ingestion, UNALTERED. 26 highlight overlays attached as metadata (offset, category, classifier_id, confidence) — see span diff.
+
+REDACTED_VIEW: same page with all 26 sensitive spans replaced by category-labeled masks ([CATEGORY]); mask format confirmed acceptable.
+---- key lines ----
+Full Name: [PII_NAME]
+Date of Birth: [PII_DOB]
+Social Security Number / National ID: [PII_SSN]
+Primary Phone: [PII_PHONE]
+Secondary Phone: [PII_PHONE]
+Email Address: [PII_EMAIL]
+Residential Address: [PII_ADDRESS]
+IP Address: [PII_IP]
+Credit Card Number: [FIN_CC]
+Card Expiration: [FIN_EXP]
+CVV: [FIN_CVV]
+Bank Account (IBAN): [FIN_IBAN]
+Billing Address: [PII_ADDRESS]
+[09:14:22] [PII_NAME]: ... account [FIN_CC]. My name is [PII_NAME], born [PII_DOB].
+[09:15:02] Agent 4092: Hello [PII_NAME]. ...
+[09:15:20] [PII_NAME]: Yes, it's [PII_ADDRESS], and the last four of my SSN [PII_SSN].
+[09:16:05] ... visa card [FIN_CC].
+[09:16:40] [PII_NAME]: ... to [PII_EMAIL] or text me at [PII_PHONE].
+[09:17:10] ... account at [FIN_IBAN].
+[CUSTOMER PROFILE] Full Name: Dr. (truncated, no mask)
+---- end key lines ----
+
+SPAN DIFF: 26 spans masked (PII_NAME x7, PII_DOB x2, PII_SSN x2, PII_PHONE x3, PII_EMAIL x2, PII_ADDRESS x2, PII_IP x1, FIN_CC x3, FIN_EXP x1, FIN_CVV x1, FIN_IBAN x2). No spans reordered/dropped/duplicated between views.
+
+SELF-CHECKS: masked-text leakage scan = CLEAN (no original sensitive substring survives in redacted_view); offset integrity = PASS (every offset maps back to identical source span).
+
+FLAGGED FOR OPERATOR (do not silently resolve):
+- Partial-residual "Sarah" remains in "Thank you, Sarah." (line 09:16:05) — name fragment, low-confidence, left unmasked.
+- Truncated name "Dr." at page end — incomplete span, left unmasked.
+- Mask "ending in 9081" absorbed the literal words "ending in" plus the card fragment 9081 (FIN_CC). Mask "are 1049" absorbed "are".
+- Agent IDs (AGENT_4092/AGENT_1022) and RECORD IDs left in clear.
+
+page_hash (content+span-set): 3d209182b4e2743cf7d2ea345a8961ce8ca25dfa25a3be6841f640283bc9d17b
+
+Requesting operator outcome for THIS page only: APPROVE / MODIFY / REJECT. On MODIFY, route added spans as false negatives (ADD) and removed spans as false positives (REMOVE).'.
+The mode is 'Fulfill'.
+
+[AGENT] @ 2026-10-16 13:50:00:
+Invoking: `feedback_logging_agent` with:
+```json
+{
+    "invoked_agent_name": "feedback_logging_agent",
+    "invoking_start": true,
+    "params": {
+        "inquiry": "Page a4a52de09a2485e5-p0000 (index 0) review gate: dual-state payload presented, awaiting operator decision (APPROVE/MODIFY/REJECT). If MODIFY, edits must be routed as ADD (false negative) / REMOVE (false positive) records. Does this fall within your scope?",
+        "mode": "Determine"
+    }
+}
+```
+
+[AGENT_TOOL_RESULT (result from feedback_logging_agent)] @ 2026-10-16 13:50:35:
+{
+    "Name": "Feedback Logging Stage (HITL Document Redaction Network)",
+    "Inquiry": "Page a4a52de09a2485e5-p0000 (index 0) review gate: dual-state payload presented, awaiting operator decision (APPROVE/MODIFY/REJECT). If MODIFY, edits must be routed as ADD (false negative) / REMOVE (false positive) records. Does this fall within your scope?",
+    "Mode": "Determine",
+    "Relevant": "Yes",
+    "Strength": 9,
+    "Claim": "Partial",
+    "Requirements": [
+        "The live gate itself — presenting the dual-state payload and capturing the operator's APPROVE/MODIFY/REJECT decision on page a4a52de09a2485e5-p0000 — is NOT my function; that is the upstream review gate. Right now no operator edit exists, so there is nothing for me to log at this moment.",
+        "The conditional routing half IS squarely my scope: when the operator chooses MODIFY, every added or removed span must be routed to me as exactly one structured record per edit — ADD (classifier missed a span / false negative) or REMOVE (classifier flagged a span the reviewer rejected / false positive). REJECT decisions are also in my scope as captured rejection signal; an APPROVE yields no edit record from me.",
+        "Each routed edit must include the full record schema: page_id (a4a52de09a2485e5-p0000), change_type, classifier_id (the classifier the edit implicates), category (PII/PHI subtype), context_snippet, span (exact character offsets), confidence, reviewer_id, and timestamp (ISO-8601). If a field is unknown, send the edit anyway with that field explicitly null — I never drop, deduplicate, or coalesce edits, and I preserve them exactly as made.",
+        "I will persist each record durably via write_file immediately after every edit (append-only, no batching/deferral) and only after confirmed persistence forward the accumulated structured feedback to the learning stage (Active Learning Agent), which has confirmed it consumes these ADD/REMOVE records as its input but acts only analytically, staging proposals in PENDING_ADMIN_REVIEW.",
+        "Do not send me the page-level APPROVE/MODIFY/REJECT decision itself as a training signal — that decision is gate state, not an edit; only concrete span-level edits (and REJECTs) become records on my side."
+    ]
+}
+
+[AI] @ 2026-10-16 13:50:41:
+Payload assembled. No operator decision has been received, so execution halts.
+
+```json
+{
+  "Name": "HITL Review Gate",
+  "Inquiry": "Page a4a52de09a2485e5-p0000 (index 0), 2000 chars, content_hash 3a439d1d...849099 (verified match). Present the dual-state review payload and halt for operator decision.",
+  "Mode": "Fulfill",
+  "Response": {
+    "gate_state": "WAITING_FOR_HUMAN",
+    "auto_advance_on_timeout": false,
+    "page_id": "a4a52de09a2485e5-p0000",
+    "page_number": 1,
+    "total_pages": "unknown (page unit supplied ad hoc; not provided in payload)",
+    "content_hash": "3a439d1d...849099",
+    "page_hash": "3d209182b4e2743cf7d2ea345a8961ce8ca25dfa25a3be6841f640283bc9d17b",
+    "unredacted_view": {
+      "text": "raw page text as emitted by ingestion, UNALTERED",
+      "highlights": "26 overlays (offset, category, classifier_id, confidence) per SPAN DIFF"
+    },
+    "redacted_view": {
+      "text_with_masks": "same page, all 26 sensitive spans replaced by [CATEGORY] masks; mask format confirmed acceptable",
+      "leakage_scan": "CLEAN",
+      "offset_integrity": "PASS"
+    },
+    "ai_summary": {
+      "num_spans": 26,
+      "categories": {
+        "PII_NAME": 7,
+        "PII_DOB": 2,
+        "PII_SSN": 2,
+        "PII_PHONE": 3,
+        "PII_EMAIL": 2,
+        "PII_ADDRESS": 2,
+        "PII_IP": 1,
+        "FIN_CC": 3,
+        "FIN_EXP": 1,
+        "FIN_CVV": 1,
+        "FIN_IBAN": 2
+      },
+      "span_diff": "no spans reordered/dropped/duplicated between views"
+    },
+    "actions": ["APPROVE", "MODIFY", "REJECT"],
+    "editable_highlights": "the 26-span set above (editable only under MODIFY)",
+    "flagged_for_operator_do_not_silently_resolve": [
+      "Partial-residual name 'Sarah' remains in 'Thank you, Sarah.' (09:16:05) — low-confidence name fragment, left unmasked.",
+      "Truncated name 'Dr.' at page end — incomplete span, left unmasked.",
+      "Mask 'ending in 9081' absorbed literal words 'ending in' + card fragment 9081 (FIN_CC).",
+      "Mask 'are 1049' absorbed the word 'are'.",
+      "Agent IDs (AGENT_4092 / AGENT_1022) and RECORD IDs left in clear."
+    ],
+    "policy_metadata": {
+      "auto_advance_on_timeout": false
+    },
+    "note": "No APPROVE/MODIFY/REJECT has been received. I do not fabricate, infer, or default a decision. Awaiting an explicit operator action."
+  }
+}
+```
+
+Status: **WAITING_FOR_HUMAN** — execution halted for page `a4a52de09a2485e5-p0000`. No auto-advance on timeout; if no decision arrives the gate will remain in this state and surface it rather than progressing.
+
+On decision I will record `reviewer_id`, ISO-8601 `timestamp`, `action`, and `spans_final` into the approval_matrix keyed by `page_id`. If MODIFY, each span-level edit will be routed to the Feedback Logging Stage as ADD (missed detection / false negative) or REMOVE (over-detection / false positive), one durable record per edit — that routing stage has confirmed it is in-scope for those records, though it holds nothing to act on until an edit actually exists.
+
+[AGENT] @ 2026-10-16 13:50:41:
+```json
+{
+    "caveats": [
+        "Token usage is tracked at the agent level. Counts include usage from any downstream agents called on this agent's behalf.",
+        "Token counts are approximate and estimated using tiktoken.",
+        "time_taken_in_seconds includes overhead from Langchain and Neuro SAN"
+    ],
+    "completion_tokens": 7569,
+    "empty_responses": 0,
+    "prompt_tokens": 16451,
+    "successful_requests": 7,
+    "time_taken_in_seconds": 45.26220893859863,
+    "total_cost": 0.0,
+    "total_tokens": 24020
+}
+```

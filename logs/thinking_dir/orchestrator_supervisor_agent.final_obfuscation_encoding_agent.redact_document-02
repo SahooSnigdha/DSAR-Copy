@@ -1,0 +1,1367 @@
+Agent: orchestrator_supervisor_agent.final_obfuscation_encoding_agent.redact_document-02
+
+[AGENT] @ 2026-10-19 14:12:19:
+Received arguments:
+```json
+{
+    "tool_args": {
+        "approved_spans": [
+            {
+                "category": "PII.PERSON_NAME",
+                "content": "Marcus Aurelius Vance",
+                "end": 35,
+                "mask_mode": "full",
+                "start": 14,
+                "value": "Marcus Aurelius Vance"
+            },
+            {
+                "category": "PII.IDENTIFIER.USERNAME",
+                "content": "mavance_admin",
+                "end": 69,
+                "mask_mode": "full",
+                "start": 56,
+                "value": "mavance_admin"
+            },
+            {
+                "category": "PII.CONTACT.EMAIL",
+                "content": "m.vance@gmail.com",
+                "end": 105,
+                "mask_mode": "partial",
+                "start": 88,
+                "value": "m.vance@gmail.com"
+            },
+            {
+                "category": "PII.CONTACT.PHONE_NUMBER",
+                "content": "+1 (555) 712-4091",
+                "end": 141,
+                "mask_mode": "partial",
+                "start": 124,
+                "value": "+1 (555) 712-4091"
+            },
+            {
+                "category": "PII.IDENTIFIER.PASSPORT",
+                "content": "N89201492",
+                "end": 214,
+                "mask_mode": "partial_last4",
+                "start": 205,
+                "value": "N89201492"
+            },
+            {
+                "category": "PII.LOCATION.IP_ADDRESS",
+                "content": "192.168.10.45",
+                "end": 246,
+                "mask_mode": "full",
+                "start": 233,
+                "value": "192.168.10.45"
+            },
+            {
+                "category": "PII.LOCATION.STREET_ADDRESS",
+                "content": "100 Cyberdyne Way, Suite 400, Portland, OR 97201",
+                "end": 319,
+                "mask_mode": "full",
+                "start": 271,
+                "value": "100 Cyberdyne Way, Suite 400, Portland, OR 97201"
+            },
+            {
+                "category": "PII.IDENTIFIER.SSN",
+                "content": "483-92-1049",
+                "end": 358,
+                "mask_mode": "partial_last4",
+                "start": 347,
+                "value": "483-92-1049"
+            },
+            {
+                "category": "PHI.HEALTH_INSURANCE_MEMBER_ID",
+                "content": "HI-902849102-B",
+                "end": 402,
+                "mask_mode": "partial_last4",
+                "start": 388,
+                "value": "HI-902849102-B"
+            },
+            {
+                "category": "PII.PERSON_NAME.FILENAME",
+                "content": "Marcus Vance",
+                "end": 12,
+                "mask_mode": "full",
+                "replacement": "XXXXXX XXXXX",
+                "start": 0,
+                "target": "filename",
+                "value": "Marcus Vance"
+            }
+        ],
+        "content": "1. Full Name: Marcus Aurelius Vance\n2. System Username: mavance_admin\n3. Email Address: m.vance@gmail.com\n4. Primary Phone: +1 (555) 712-4091\n5. User Role: Senior Systems Administrator\n6. Passport Number: N89201492\n7. Last Login IP: 192.168.10.45\n8. Residential Address: 100 Cyberdyne Way, Suite 400, Portland, OR 97201\n9. Social Security Number: 483-92-1049\n10. Health Insurance Number: HI-902849102-B",
+        "file_name": "Marcus Vance System Account Record.pdf",
+        "file_path": "/Users/snigdhasahoo/Auto_Redaction/data/Marcus Vance System Account Record.pdf",
+        "origin": [
+            {
+                "instantiation_index": 1,
+                "tool": "orchestrator_supervisor_agent"
+            },
+            {
+                "instantiation_index": 1,
+                "tool": "final_obfuscation_encoding_agent"
+            },
+            {
+                "instantiation_index": 2,
+                "tool": "redact_document"
+            }
+        ],
+        "origin_str": "orchestrator_supervisor_agent.final_obfuscation_encoding_agent.redact_document-02",
+        "output_dir": "/Users/snigdhasahoo/Auto_Redaction/data"
+    },
+    "tool_start": true
+}
+```
+
+[AGENT] @ 2026-10-19 14:12:19:
+Got result:
+```json
+{
+    "tool_end": true,
+    "tool_error": false,
+    "tool_output": {
+        "content_redactions_count": 10,
+        "filename_redactions_count": 0,
+        "leakage_verification": {
+            "passed": true,
+            "violations": []
+        },
+        "output_artifacts": [
+            "/Users/snigdhasahoo/Auto_Redaction/data/Marcus Vance System Account Record_redacted.txt",
+            "/Users/snigdhasahoo/Auto_Redaction/data/Marcus Vance System Account Record_redacted.pdf"
+        ],
+        "redacted_content": "1. Full Name: Marcus Aurelius Vance\n2. System Username: mavance_admin\n3. Email Address: m.vance@gmail.com\n4. Primary Phone: +1 (555) 712-4091\n5. User Role: Senior Systems Administrator\n6. Passport Number: N89201492\n7. Last Login IP: 192.168.10.45\n8. Residential Address: 100 Cyberdyne Way, Suite 400, Portland, OR 97201\n9. Social Security Number: 483-92-1049\n10. Health Insurance Number: HI-902849102-B",
+        "redacted_file_name": "Marcus Vance System Account Record_redacted.pdf",
+        "status": "COMPLETED",
+        "total_redactions_applied": 10
+    }
+}
+```
+
+[AGENT] @ 2026-10-19 14:27:08:
+Received arguments:
+```json
+{
+    "tool_args": {
+        "approved_spans": [
+            {
+                "category": "PII/PERSON_NAME",
+                "end": 35,
+                "field": "file_name",
+                "start": 14,
+                "target": "file_name",
+                "text": "Marcus Aurelius Vance",
+                "type": "file_name"
+            },
+            {
+                "category": "PII/PERSON_NAME",
+                "end": 30,
+                "field": "filename",
+                "start": 14,
+                "target": "filename",
+                "text": "Marcus Aurelius Vance",
+                "type": "content"
+            },
+            {
+                "category": "PII/PERSON_NAME",
+                "end": 12,
+                "text": "Marcus Vance",
+                "type": "file_name"
+            },
+            {
+                "category": "PII/IDENTIFIER/USERNAME",
+                "end": 69,
+                "text": "mavance_admin",
+                "type": "content"
+            },
+            {
+                "category": "PII/CONTACT/EMAIL",
+                "end": 105,
+                "text": "m.vance@gmail.com",
+                "type": "content"
+            },
+            {
+                "category": "PII/CONTACT/PHONE_NUMBER",
+                "end": 141,
+                "text": "+1 (555) 712-4091",
+                "type": "content"
+            },
+            {
+                "category": "PII/IDENTIFIER/PASSPORT",
+                "end": 214,
+                "text": "N89201492",
+                "type": "content"
+            },
+            {
+                "category": "PII/LOCATION/IP_ADDRESS",
+                "end": 246,
+                "text": "192.168.10.45",
+                "type": "content"
+            },
+            {
+                "category": "PII/LOCATION/STREET_ADDRESS",
+                "end": 319,
+                "text": "100 Cyberdyne Way, Suite 400, Portland, OR 97201",
+                "type": "content"
+            },
+            {
+                "category": "PII/IDENTIFIER/SSN",
+                "end": 358,
+                "text": "483-92-1049",
+                "type": "content"
+            },
+            {
+                "category": "PHI/MEDICAL_IDENTIFIER/HEALTH_INSURANCE_MEMBER_ID",
+                "end": 402,
+                "text": "HI-902849102-B",
+                "type": "content"
+            }
+        ],
+        "content": "1. Full Name: Marcus Aurelius Vance\n2. System Username: mavance_admin\n3. Email Address: m.vance@gmail.com\n4. Primary Phone: +1 (555) 712-4091\n5. User Role: Senior Systems Administrator\n6. Passport Number: N89201492\n7. Last Login IP: 192.168.10.45\n8. Residential Address: 100 Cyberdyne Way, Suite 400, Portland, OR 97201\n9. Social Security Number: 483-92-1049\n10. Health Insurance Number: HI-902849102-B",
+        "file_name": "Marcus Vance System Account Record.pdf",
+        "file_path": "/Users/snigdhasahoo/Auto_Redaction/data/Marcus Vance System Account Record.pdf",
+        "origin": [
+            {
+                "instantiation_index": 1,
+                "tool": "orchestrator_supervisor_agent"
+            },
+            {
+                "instantiation_index": 1,
+                "tool": "final_obfuscation_encoding_agent"
+            },
+            {
+                "instantiation_index": 2,
+                "tool": "redact_document"
+            }
+        ],
+        "origin_str": "orchestrator_supervisor_agent.final_obfuscation_encoding_agent.redact_document-02",
+        "output_dir": "/Users/snigdhasahoo/Auto_Redaction/data"
+    },
+    "tool_start": true
+}
+```
+
+[AGENT] @ 2026-10-19 14:27:08:
+Got result:
+```json
+{
+    "tool_end": true,
+    "tool_error": false,
+    "tool_output": {
+        "content_redactions_count": 10,
+        "filename_redactions_count": 1,
+        "leakage_verification": {
+            "passed": true,
+            "violations": []
+        },
+        "output_artifacts": [
+            "/Users/snigdhasahoo/Auto_Redaction/data/Marcus Vance System Account Record_redacted.txt",
+            "/Users/snigdhasahoo/Auto_Redaction/data/Marcus Vance System Account Record_redacted.pdf"
+        ],
+        "redacted_content": "1. Full Name: \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\n2. System Username: \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\n3. Email Address: \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0@gmail.com\n4. Primary Phone: +1 (\u25a0\u25a0\u25a0) \u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0\u25a0\n5. User Role: Senior Systems Administrator\n6. Passport Number: \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\n7. Last Login IP: \u25a0\u25a0\u25a0.\u25a0\u25a0\u25a0.\u25a0\u25a0.\u25a0\u25a0\n8. Residential Address: \u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0, \u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0, Portland, OR 97201\n9. Social Security Number: \u25a0\u25a0\u25a0-\u25a0\u25a0-1049\n10. Health Insurance Number: HI-\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0-B",
+        "redacted_file_name": "Marcus Vance System Account Record_redacted.pdf",
+        "status": "COMPLETED",
+        "total_redactions_applied": 11
+    }
+}
+```
+
+[AGENT] @ 2026-10-19 14:29:36:
+Received arguments:
+```json
+{
+    "tool_args": {
+        "approved_spans": [
+            {
+                "category": "PII/PERSON_NAME",
+                "end": 35,
+                "mask": "full",
+                "start": 14,
+                "text": "Marcus Aurelius Vance"
+            },
+            {
+                "category": "PII/IDENTIFIER/USERNAME",
+                "end": 69,
+                "mask": "full",
+                "start": 56,
+                "text": "mavance_admin"
+            },
+            {
+                "category": "PII/CONTACT/EMAIL",
+                "end": 105,
+                "mask": "partial",
+                "preserve": "domain",
+                "start": 88,
+                "text": "m.vance@gmail.com"
+            },
+            {
+                "category": "PII/CONTACT/PHONE_NUMBER",
+                "end": 141,
+                "mask": "partial",
+                "preserve": "area_code_and_last_4",
+                "start": 124,
+                "text": "+1 (555) 712-4091"
+            },
+            {
+                "category": "PII/IDENTIFIER/PASSPORT",
+                "end": 214,
+                "mask": "full",
+                "start": 205,
+                "text": "N89201492"
+            },
+            {
+                "category": "PII/LOCATION/IP_ADDRESS",
+                "end": 246,
+                "mask": "full",
+                "start": 233,
+                "text": "192.168.10.45"
+            },
+            {
+                "category": "PII/LOCATION/STREET_ADDRESS",
+                "end": 319,
+                "mask": "partial",
+                "preserve": "city_state_zip",
+                "start": 271,
+                "text": "100 Cyberdyne Way, Suite 400, Portland, OR 97201"
+            },
+            {
+                "category": "PII/IDENTIFIER/SSN",
+                "end": 358,
+                "mask": "partial",
+                "preserve": "last4",
+                "start": 347,
+                "text": "483-92-1049"
+            },
+            {
+                "category": "PHI/MEDICAL_IDENTIFIER/HEALTH_INSURANCE_MEMBER_ID",
+                "end": 402,
+                "mask": "partial",
+                "preserve": "member_id_body_masked",
+                "start": 388,
+                "text": "HI-902849102-B"
+            },
+            {
+                "category": "PII/PERSON_NAME/FILENAME",
+                "mask": "full",
+                "replacement": "XXXXXX XXXXX",
+                "target": "filename",
+                "text": "Marcus Vance"
+            }
+        ],
+        "content": "1. Full Name: Marcus Aurelius Vance\n2. System Username: mavance_admin\n3. Email Address: m.vance@gmail.com\n4. Primary Phone: +1 (555) 712-4091\n5. User Role: Senior Systems Administrator\n6. Passport Number: N89201492\n7. Last Login IP: 192.168.10.45\n8. Residential Address: 100 Cyberdyne Way, Suite 400, Portland, OR 97201\n9. Social Security Number: 483-92-1049\n10. Health Insurance Number: HI-902849102-B",
+        "file_name": "Marcus Vance System Account Record.pdf",
+        "file_path": "/Users/snigdhasahoo/Auto_Redaction/data/Marcus Vance System Account Record.pdf",
+        "origin": [
+            {
+                "instantiation_index": 1,
+                "tool": "orchestrator_supervisor_agent"
+            },
+            {
+                "instantiation_index": 1,
+                "tool": "final_obfuscation_encoding_agent"
+            },
+            {
+                "instantiation_index": 2,
+                "tool": "redact_document"
+            }
+        ],
+        "origin_str": "orchestrator_supervisor_agent.final_obfuscation_encoding_agent.redact_document-02",
+        "output_dir": "/Users/snigdhasahoo/Auto_Redaction/data"
+    },
+    "tool_start": true
+}
+```
+
+[AGENT] @ 2026-10-19 14:29:36:
+Got result:
+```json
+{
+    "tool_end": true,
+    "tool_error": false,
+    "tool_output": {
+        "content_redactions_count": 9,
+        "filename_redactions_count": 1,
+        "leakage_verification": {
+            "passed": true,
+            "violations": []
+        },
+        "output_artifacts": [
+            "/Users/snigdhasahoo/Auto_Redaction/data/XXXXXX XXXXX System Account Record_redacted.txt",
+            "/Users/snigdhasahoo/Auto_Redaction/data/XXXXXX XXXXX System Account Record_redacted.pdf"
+        ],
+        "redacted_content": "1. Full Name: \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\n2. System Username: \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\n3. Email Address: \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0@gmail.com\n4. Primary Phone: +1 (\u25a0\u25a0\u25a0) \u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0\u25a0\n5. User Role: Senior Systems Administrator\n6. Passport Number: \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\n7. Last Login IP: \u25a0\u25a0\u25a0.\u25a0\u25a0\u25a0.\u25a0\u25a0.\u25a0\u25a0\n8. Residential Address: \u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0, \u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0, Portland, OR 97201\n9. Social Security Number: \u25a0\u25a0\u25a0-\u25a0\u25a0-1049\n10. Health Insurance Number: HI-\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0-B",
+        "redacted_file_name": "XXXXXX XXXXX System Account Record_redacted.pdf",
+        "status": "COMPLETED",
+        "total_redactions_applied": 10
+    }
+}
+```
+
+[AGENT] @ 2026-10-19 14:47:01:
+Received arguments:
+```json
+{
+    "tool_args": {
+        "approved_spans": [
+            {
+                "category": "PII.PERSON_NAME",
+                "end": 147,
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "start": 127,
+                "text": "Brenda Marie Higgins"
+            },
+            {
+                "category": "PII.PERSON_NAME",
+                "end": 237,
+                "mask": "\u25a0\u25a0\u25a0\u25a0",
+                "start": 233,
+                "text": "Alex"
+            },
+            {
+                "category": "PII.PERSON_NAME",
+                "end": 342,
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "start": 328,
+                "text": "Brenda Higgins"
+            },
+            {
+                "category": "PII.PERSON_NAME",
+                "end": 351,
+                "mask": "\u25a0\u25a0\u25a0\u25a0",
+                "start": 347,
+                "text": "Alex"
+            },
+            {
+                "category": "PII.PERSON_NAME",
+                "end": 389,
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "start": 369,
+                "text": "Brenda Marie Higgins"
+            },
+            {
+                "category": "PII.CONTACT.PHONE_NUMBER",
+                "end": 427,
+                "mask": "\u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0-1083",
+                "start": 415,
+                "text": "555-492-1083"
+            },
+            {
+                "category": "PII.PERSON_NAME",
+                "end": 474,
+                "mask": "\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "start": 463,
+                "text": "Ms. Higgins"
+            },
+            {
+                "category": "PII.PERSON_NAME",
+                "end": 653,
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "start": 639,
+                "text": "Brenda Higgins"
+            },
+            {
+                "category": "PII.DEMOGRAPHIC.DATE_OF_BIRTH",
+                "end": 693,
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0, \u25a0\u25a0\u25a0\u25a0",
+                "start": 676,
+                "text": "November 14, 1982"
+            },
+            {
+                "category": "PII.PERSON_NAME",
+                "end": 883,
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "start": 869,
+                "text": "Brenda Higgins"
+            },
+            {
+                "category": "PII.PERSON_NAME",
+                "end": 1061,
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "start": 1055,
+                "text": "Brenda"
+            },
+            {
+                "category": "PII.PERSON_NAME",
+                "end": 1217,
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "start": 1203,
+                "text": "Brenda Higgins"
+            },
+            {
+                "category": "PII.CONTACT.EMAIL",
+                "end": 1325,
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0@example-mail.net",
+                "start": 1292,
+                "text": "brenda.higgins82@example-mail.net"
+            },
+            {
+                "category": "PII.CONTACT.EMAIL",
+                "end": 1437,
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0@example-mail.net",
+                "start": 1404,
+                "text": "brenda.higgins82@example-mail.net"
+            },
+            {
+                "category": "PII.PERSON_NAME",
+                "end": 1516,
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "start": 1502,
+                "text": "Brenda Higgins"
+            }
+        ],
+        "content": "CUSTOMER SUPPORT CALL TRANSCRIPT\nRECORD ID: REC-2026-09411\nTIMESTAMP: 2026-10-19T14:15:00Z\nAGENT ID: AGENT_8819\nCUSTOMER NAME: Brenda Marie Higgins\nTranscript\n[14:15:05] Agent 8819: Thank you for calling Pinnacle Support. My name is Alex. May I have \nyour full name and account number or phone number to get started?\n[14:15:22] Brenda Higgins: Hi Alex. Yes, my name is Brenda Marie Higgins, and my phone \nnumber is 555-492-1083.\n[14:15:45] Agent 8819: Thank you, Ms. Higgins. I see your account here. For verification \npurposes, could you please confirm your date of birth and the last 4 digits of your Social \nSecurity Number?\n[14:16:02] Brenda Higgins: Sure, my birthday is November 14, 1982, and my SSN ends in \n7741.\n[14:16:25] Agent 8819: Perfect, thank you for verifying. I see you're inquiring about the \nbilling discrepancy on your recent statement.\n[14:16:45] Brenda Higgins: Exactly. I was charged twice for my monthly subscription on \nOctober 10th using my Visa card ending in 4421.\n[14:17:10] Agent 8819: I sincerely apologize for that error, Brenda. I have processed a \nrefund of $49.99 back to your card ending in 4421. You should see it reflected within 3 to 5 \nbusiness days.\n[14:17:40] Brenda Higgins: That's great. Can you also send the confirmation receipt to my \nemail at brenda.higgins82@example-mail.net?\n[14:18:00] Agent 8819: Absolutely, I've just dispatched the confirmation to \nbrenda.higgins82@example-mail.net. Is there anything else I can assist you with today?\n[14:18:15] Brenda Higgins: No, that's everything. Thanks for your quick help!\n[14:18:22] Agent 8819: You're very welcome. Have a wonderful day!",
+        "file_name": "customer_care_transcript.pdf",
+        "file_path": "/Users/snigdhasahoo/Auto_Redaction/data/customer_care_transcript.pdf",
+        "origin": [
+            {
+                "instantiation_index": 1,
+                "tool": "orchestrator_supervisor_agent"
+            },
+            {
+                "instantiation_index": 1,
+                "tool": "final_obfuscation_encoding_agent"
+            },
+            {
+                "instantiation_index": 2,
+                "tool": "redact_document"
+            }
+        ],
+        "origin_str": "orchestrator_supervisor_agent.final_obfuscation_encoding_agent.redact_document-02",
+        "output_dir": "data"
+    },
+    "tool_start": true
+}
+```
+
+[AGENT] @ 2026-10-19 14:47:01:
+Got result:
+```json
+{
+    "tool_end": true,
+    "tool_error": false,
+    "tool_output": {
+        "content_redactions_count": 15,
+        "filename_redactions_count": 0,
+        "leakage_verification": {
+            "passed": true,
+            "violations": []
+        },
+        "output_artifacts": [
+            "/Users/snigdhasahoo/Auto_Redaction/data/customer_care_transcript_redacted.txt",
+            "/Users/snigdhasahoo/Auto_Redaction/data/customer_care_transcript_redacted.pdf"
+        ],
+        "redacted_content": "CUSTOMER SUPPORT CALL TRANSCRIPT\nRECORD ID: REC-2026-09411\nTIMESTAMP: 2026-10-19T14:15:00Z\nAGENT ID: AGENT_8819\nCUSTOMER NAME: \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\nTranscript\n[14:15:05] Agent 8819: Thank you for calling Pinnacle Support. My name is \u25a0\u25a0\u25a0\u25a0. May I have \nyour full name and account number or phone number to get started?\n[14:15:22] \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0: Hi \u25a0\u25a0\u25a0\u25a0. Yes, my name is \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0, and my phone \nnumber is \u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0\u25a0.\n[14:15:45] Agent 8819: Thank you, \u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0. I see your account here. For verification \npurposes, could you please confirm your date of birth and the last 4 digits of your Social \nSecurity Number?\n[14:16:02] \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0: Sure, my birthday is \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0, and my SSN ends in \n7741.\n[14:16:25] Agent 8819: Perfect, thank you for verifying. I see you're inquiring about the \nbilling discrepancy on your recent statement.\n[14:16:45] \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0: Exactly. I was charged twice for my monthly subscription on \nOctober 10th using my Visa card ending in 4421.\n[14:17:10] Agent 8819: I sincerely apologize for that error, \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0. I have processed a \nrefund of $49.99 back to your card ending in 4421. You should see it reflected within 3 to 5 \nbusiness days.\n[14:17:40] \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0: That's great. Can you also send the confirmation receipt to my \nemail at \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0@example-mail.net?\n[14:18:00] Agent 8819: Absolutely, I've just dispatched the confirmation to \n\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0@example-mail.net. Is there anything else I can assist you with today?\n[14:18:15] \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0: No, that's everything. Thanks for your quick help!\n[14:18:22] Agent 8819: You're very welcome. Have a wonderful day!",
+        "redacted_file_name": "customer_care_transcript_redacted.pdf",
+        "status": "COMPLETED",
+        "total_redactions_applied": 15
+    }
+}
+```
+
+[AGENT] @ 2026-10-19 15:20:56:
+Received arguments:
+```json
+{
+    "tool_args": {
+        "approved_spans": [
+            {
+                "category": "PHI.MEDICAL_IDENTIFIER",
+                "end": 64,
+                "field": "content",
+                "id": 1,
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "start": 47,
+                "text": "REC-2026-UK-08421"
+            },
+            {
+                "category": "PII.PERSON_NAME",
+                "end": 151,
+                "field": "content",
+                "id": 2,
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "start": 135,
+                "text": "Arthur Pendelton"
+            },
+            {
+                "category": "PII.PERSON_NAME",
+                "end": 376,
+                "field": "content",
+                "id": 3,
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "start": 360,
+                "text": "Arthur Pendelton"
+            },
+            {
+                "category": "PII.PERSON_NAME",
+                "end": 426,
+                "field": "content",
+                "id": 4,
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "start": 410,
+                "text": "Arthur Pendelton"
+            },
+            {
+                "category": "PII.PERSON_NAME",
+                "end": 689,
+                "field": "content",
+                "id": 5,
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "start": 673,
+                "text": "Arthur Pendelton"
+            },
+            {
+                "category": "PII.LOCATION.UK_POSTCODE",
+                "end": 768,
+                "field": "content",
+                "id": 6,
+                "replacement": "SW1A \u25a0\u25a0\u25a0",
+                "start": 760,
+                "text": "SW1A 1AA"
+            },
+            {
+                "category": "PII.PERSON_NAME",
+                "end": 933,
+                "field": "content",
+                "id": 7,
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "start": 917,
+                "text": "Arthur Pendelton"
+            },
+            {
+                "category": "PII.PERSON_NAME",
+                "end": 1295,
+                "field": "content",
+                "id": 8,
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "start": 1279,
+                "text": "Arthur Pendelton"
+            },
+            {
+                "category": "PII.CONTACT.PHONE_NUMBER",
+                "end": 1393,
+                "field": "content",
+                "id": 9,
+                "replacement": "+44 \u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "start": 1378,
+                "text": "+44 7700 900077"
+            },
+            {
+                "category": "PII.PERSON_NAME",
+                "end": 1592,
+                "field": "content",
+                "id": 10,
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "start": 1576,
+                "text": "Arthur Pendelton"
+            }
+        ],
+        "content": "UK CUSTOMER SUPPORT CALL TRANSCRIPT\nRECORD ID: REC-2026-UK-08421\nTIMESTAMP: 2026-10-19T14:30:00Z\nAGENT ID: AGENT_UK_512\nCUSTOMER NAME: Arthur Pendelton\nLOCATION: London, United Kingdom\nTranscript\n[14:30:12] Agent 512: Thank you for calling Metro Bank UK. My name is Oliver. Could I \nplease take your full name and your sort code and account number?\n[14:30:35] Arthur Pendelton: Right, hello Oliver. My name is Arthur Pendelton, and my sort \ncode is 40-22-04, account number is 89123456.\n[14:31:02] Agent 512: Brilliant, thank you Mr. Pendelton. Just for data protection and \nsecurity verification, could you confirm your date of birth and your full UK postcode?\n[14:31:25] Arthur Pendelton: Certainly. I was born on the 14th of July, 1974, and my \npostcode is SW1A 1AA.\n[14:31:50] Agent 512: Splendid, thank you very much for verifying that, Arthur. I've located \nyour account. How can I assist you today?\n[14:32:10] Arthur Pendelton: I'm calling about an unauthorized direct debit taken from my \naccount on the 15th of October for \u00a389.50.\n[14:32:45] Agent 512: I am terribly sorry about that trouble, Arthur. I can see the direct \ndebit right here. I'll issue an immediate indemnity claim under the Direct Debit Guarantee \nand refund the \u00a389.50 back to your account.\n[14:33:15] Arthur Pendelton: Excellent, thank you. Could you also update my contact mobile \nnumber on file to +44 7700 900077?\n[14:33:40] Agent 512: Consider it done, Arthur. I have updated your mobile number to +44 \n7700 900077 and sent a confirmation text. Anything else I can sort out for you?\n[14:34:02] Arthur Pendelton: No, that covers everything. Cheers for your help, Oliver.\n[14:34:15] Agent 512: You're most welcome, Arthur. Have a lovely afternoon. Cheerio!",
+        "file_name": "Arthur_P_Transcription.pdf",
+        "file_path": "/Users/snigdhasahoo/Auto_Redaction/data/Arthur_P_Transcription.pdf",
+        "origin": [
+            {
+                "instantiation_index": 1,
+                "tool": "orchestrator_supervisor_agent"
+            },
+            {
+                "instantiation_index": 1,
+                "tool": "final_obfuscation_encoding_agent"
+            },
+            {
+                "instantiation_index": 2,
+                "tool": "redact_document"
+            }
+        ],
+        "origin_str": "orchestrator_supervisor_agent.final_obfuscation_encoding_agent.redact_document-02",
+        "output_dir": "data"
+    },
+    "tool_start": true
+}
+```
+
+[AGENT] @ 2026-10-19 15:20:56:
+Got result:
+```json
+{
+    "tool_end": true,
+    "tool_error": false,
+    "tool_output": {
+        "content_redactions_count": 10,
+        "filename_redactions_count": 0,
+        "leakage_verification": {
+            "passed": true,
+            "violations": []
+        },
+        "output_artifacts": [
+            "/Users/snigdhasahoo/Auto_Redaction/data/Arthur_P_Transcription_redacted.txt",
+            "/Users/snigdhasahoo/Auto_Redaction/data/Arthur_P_Transcription_redacted.pdf"
+        ],
+        "redacted_content": "UK CUSTOMER SUPPORT CALL TRANSCRIPT\nRECORD ID: \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\nTIMESTAMP: 2026-10-19T14:30:00Z\nAGENT ID: AGENT_UK_512\nCUSTOMER NAME: \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\nLOCATION: London, United Kingdom\nTranscript\n[14:30:12] Agent 512: Thank you for calling Metro Bank UK. My name is Oliver. Could I \nplease take your full name and your sort code and account number?\n[14:30:35] \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0: Right, hello Oliver. My name is \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0, and my sort \ncode is 40-22-04, account number is 89123456.\n[14:31:02] Agent 512: Brilliant, thank you Mr. Pendelton. Just for data protection and \nsecurity verification, could you confirm your date of birth and your full UK postcode?\n[14:31:25] \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0: Certainly. I was born on the 14th of July, 1974, and my \npostcode is SW1A \u25a0\u25a0\u25a0.\n[14:31:50] Agent 512: Splendid, thank you very much for verifying that, Arthur. I've located \nyour account. How can I assist you today?\n[14:32:10] \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0: I'm calling about an unauthorized direct debit taken from my \naccount on the 15th of October for \u00a389.50.\n[14:32:45] Agent 512: I am terribly sorry about that trouble, Arthur. I can see the direct \ndebit right here. I'll issue an immediate indemnity claim under the Direct Debit Guarantee \nand refund the \u00a389.50 back to your account.\n[14:33:15] \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0: Excellent, thank you. Could you also update my contact mobile \nnumber on file to +44 \u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0?\n[14:33:40] Agent 512: Consider it done, Arthur. I have updated your mobile number to +44 \n7700 900077 and sent a confirmation text. Anything else I can sort out for you?\n[14:34:02] \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0: No, that covers everything. Cheers for your help, Oliver.\n[14:34:15] Agent 512: You're most welcome, Arthur. Have a lovely afternoon. Cheerio!",
+        "redacted_file_name": "Arthur_P_Transcription_redacted.pdf",
+        "status": "COMPLETED",
+        "total_redactions_applied": 10
+    }
+}
+```
+
+[AGENT] @ 2026-10-19 17:37:06:
+Received arguments:
+```json
+{
+    "tool_args": {
+        "approved_spans": [
+            {
+                "category": "PHI.MEDICAL_IDENTIFIER",
+                "end": 158,
+                "id": "F01",
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "mask_mode": "full",
+                "start": 144,
+                "text": "REC-2026-08912"
+            },
+            {
+                "category": "PII.IDENTIFIER.EMPLOYEE_ID",
+                "end": 211,
+                "id": "F02",
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "mask_mode": "full",
+                "start": 201,
+                "text": "AGENT_4092"
+            },
+            {
+                "category": "PII.DEMOGRAPHIC.DATE_OF_BIRTH",
+                "end": 291,
+                "id": "F03",
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "mask_mode": "full",
+                "start": 281,
+                "text": "1988-04-12"
+            },
+            {
+                "category": "PII.IDENTIFIER.SSN",
+                "end": 341,
+                "id": "F04",
+                "mask": "\u25a0\u25a0\u25a0-\u25a0\u25a0-1049",
+                "mask_mode": "partial",
+                "start": 330,
+                "text": "483-92-1049"
+            },
+            {
+                "category": "PII.CONTACT.PHONE_NUMBER",
+                "end": 374,
+                "id": "F05",
+                "mask": "+1 (\u25a0\u25a0\u25a0) \u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0\u25a0",
+                "mask_mode": "partial",
+                "start": 357,
+                "text": "+1 (555) 382-9102"
+            },
+            {
+                "category": "PII.CONTACT.PHONE_NUMBER",
+                "end": 409,
+                "id": "F06",
+                "mask": "+1 (\u25a0\u25a0\u25a0) \u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0\u25a0",
+                "mask_mode": "partial",
+                "start": 392,
+                "text": "+1 (555) 902-1148"
+            },
+            {
+                "category": "PII.CONTACT.EMAIL",
+                "end": 453,
+                "id": "F07",
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0@example-mail.com",
+                "mask_mode": "partial",
+                "start": 425,
+                "text": "s.jenkins88@example-mail.com"
+            },
+            {
+                "category": "PII.LOCATION.STREET_ADDRESS",
+                "end": 519,
+                "id": "F08",
+                "mask": "\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0, Springfield, OR 97477",
+                "mask_mode": "partial",
+                "start": 475,
+                "text": "742 Evergreen Terrace, Springfield, OR 97477"
+            },
+            {
+                "category": "PII.LOCATION.IP_ADDRESS",
+                "end": 545,
+                "id": "F09",
+                "mask": "\u25a0\u25a0\u25a0.\u25a0\u25a0\u25a0.\u25a0.\u25a0\u25a0\u25a0",
+                "mask_mode": "partial",
+                "start": 532,
+                "text": "192.168.1.142"
+            },
+            {
+                "category": "PII.LOCATION.IP_ADDRESS",
+                "end": 587,
+                "id": "F10",
+                "mask": "\u25a0\u25a0\u25a0\u25a0:\u25a0\u25a0\u25a0\u25a0:\u25a0\u25a0\u25a0\u25a0:\u25a0\u25a0\u25a0\u25a0:\u25a0\u25a0\u25a0\u25a0:\u25a0\u25a0\u25a0\u25a0:\u25a0\u25a0\u25a0\u25a0:\u25a0\u25a0\u25a0\u25a0",
+                "mask_mode": "partial",
+                "start": 548,
+                "text": "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
+            },
+            {
+                "category": "PII.FINANCIAL.CREDIT_CARD",
+                "end": 647,
+                "id": "F11",
+                "mask": "\u25a0\u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0\u25a0-9081",
+                "mask_mode": "partial",
+                "start": 628,
+                "text": "4532-8910-4321-9081"
+            },
+            {
+                "category": "PII.FINANCIAL.IBAN",
+                "end": 728,
+                "id": "F12",
+                "mask": "US39 \u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0 23",
+                "mask_mode": "partial",
+                "start": 701,
+                "text": "US39 OBAK 0123 4567 8901 23"
+            },
+            {
+                "category": "PII.LOCATION.STREET_ADDRESS",
+                "end": 790,
+                "id": "F13",
+                "mask": "\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0, Springfield, OR 97477",
+                "mask_mode": "partial",
+                "start": 746,
+                "text": "742 Evergreen Terrace, Springfield, OR 97477"
+            },
+            {
+                "category": "PII.LOCATION.STREET_ADDRESS",
+                "end": 1206,
+                "id": "F14",
+                "mask": "\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "mask_mode": "partial",
+                "start": 1185,
+                "text": "742 Evergreen Terrace"
+            },
+            {
+                "category": "PII.FINANCIAL.CREDIT_CARD",
+                "end": 1421,
+                "id": "F15",
+                "mask": "\u25a0\u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0\u25a0-9081",
+                "mask_mode": "partial",
+                "start": 1402,
+                "text": "4532-8910-4321-9081"
+            },
+            {
+                "category": "PII.CONTACT.EMAIL",
+                "end": 1539,
+                "id": "F16",
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0@example-mail.com",
+                "mask_mode": "partial",
+                "start": 1511,
+                "text": "s.jenkins88@example-mail.com"
+            },
+            {
+                "category": "PII.CONTACT.PHONE_NUMBER",
+                "end": 1566,
+                "id": "F17",
+                "mask": "\u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0\u25a0",
+                "mask_mode": "partial",
+                "start": 1554,
+                "text": "555-382-9102"
+            },
+            {
+                "category": "PII.FINANCIAL.IBAN",
+                "end": 1669,
+                "id": "F18",
+                "mask": "US39 \u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0 23",
+                "mask_mode": "partial",
+                "start": 1642,
+                "text": "US39 OBAK 0123 4567 8901 23"
+            },
+            {
+                "category": "PHI.MEDICAL_IDENTIFIER",
+                "end": 1824,
+                "id": "F19",
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "mask_mode": "full",
+                "start": 1810,
+                "text": "REC-2026-08913"
+            },
+            {
+                "category": "PII.IDENTIFIER.EMPLOYEE_ID",
+                "end": 1877,
+                "id": "F20",
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "mask_mode": "full",
+                "start": 1867,
+                "text": "AGENT_1022"
+            },
+            {
+                "category": "PII.PERSON_NAME",
+                "end": 1933,
+                "id": "F21",
+                "mask": "\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0",
+                "mask_mode": "full",
+                "start": 1908,
+                "text": "Dr. Marcus Aurelius Vance"
+            },
+            {
+                "category": "PII.DEMOGRAPHIC.DATE_OF_BIRTH",
+                "end": 1959,
+                "id": "F22",
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "mask_mode": "full",
+                "start": 1949,
+                "text": "1975-11-30"
+            },
+            {
+                "category": "PII.IDENTIFIER.PASSPORT",
+                "end": 1986,
+                "id": "F23",
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "mask_mode": "full",
+                "start": 1977,
+                "text": "N89201492"
+            },
+            {
+                "category": "PII.IDENTIFIER.DRIVERS_LICENSE",
+                "end": 2021,
+                "id": "F24",
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "mask_mode": "full",
+                "start": 2008,
+                "text": "DL-8830192-OR"
+            },
+            {
+                "category": "PII.CONTACT.PHONE_NUMBER",
+                "end": 2054,
+                "id": "F25",
+                "mask": "+1 (\u25a0\u25a0\u25a0) \u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0\u25a0",
+                "mask_mode": "partial",
+                "start": 2037,
+                "text": "+1 (555) 712-4091"
+            },
+            {
+                "category": "PII.CONTACT.EMAIL",
+                "end": 2102,
+                "id": "F26",
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0@vanceresearch-labs.org",
+                "mask_mode": "partial",
+                "start": 2072,
+                "text": "m.vance@vanceresearch-labs.org"
+            },
+            {
+                "category": "PII.LOCATION.STREET_ADDRESS",
+                "end": 2165,
+                "id": "F27",
+                "mask": "\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0, \u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0, Portland, OR 97201",
+                "mask_mode": "partial",
+                "start": 2117,
+                "text": "100 Cyberdyne Way, Suite 400, Portland, OR 97201"
+            },
+            {
+                "category": "PHI.MEDICAL_IDENTIFIER",
+                "end": 2231,
+                "id": "F28",
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "mask_mode": "full",
+                "start": 2222,
+                "text": "MC-9021-X"
+            },
+            {
+                "category": "PHI.MEDICAL_IDENTIFIER",
+                "end": 2261,
+                "id": "F29",
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "mask_mode": "full",
+                "start": 2251,
+                "text": "MEM-309182"
+            },
+            {
+                "category": "PHI.HEALTH_DATA",
+                "end": 2310,
+                "id": "F30",
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "mask_mode": "full",
+                "start": 2288,
+                "text": "emergency dispensation"
+            },
+            {
+                "category": "PII.PERSON_NAME",
+                "end": 2328,
+                "id": "F31",
+                "mask": "\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0",
+                "mask_mode": "full",
+                "start": 2319,
+                "text": "Dr. Vance"
+            },
+            {
+                "category": "PHI.HEALTH_DATA",
+                "end": 2366,
+                "id": "F32",
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "mask_mode": "full",
+                "start": 2348,
+                "text": "penicillin allergy"
+            },
+            {
+                "category": "PHI.HEALTH_DATA",
+                "end": 2401,
+                "id": "F33",
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "mask_mode": "full",
+                "start": 2378,
+                "text": "prescription adjustment"
+            },
+            {
+                "category": "PHI.HEALTH_DATA",
+                "end": 2418,
+                "id": "F34",
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "mask_mode": "full",
+                "start": 2406,
+                "text": "Hypertension"
+            },
+            {
+                "category": "PII.PERSON_NAME",
+                "end": 2452,
+                "id": "F35",
+                "mask": "\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0",
+                "mask_mode": "full",
+                "start": 2441,
+                "text": "Elena Vance"
+            },
+            {
+                "category": "PII.CONTACT.PHONE_NUMBER",
+                "end": 2487,
+                "id": "F36",
+                "mask": "\u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0\u25a0",
+                "mask_mode": "partial",
+                "start": 2475,
+                "text": "555-712-4099"
+            }
+        ],
+        "content": "CUSTOMER SUPPORT & DSAR REQUEST LOGS - TEST DATASET\n================================================================================\nRECORD ID: REC-2026-08912\nTIMESTAMP: 2026-10-14T09:14:22Z\nAGENT ID: AGENT_4092\n[CUSTOMER PROFILE]\nFull Name: Sarah Elizabeth Jenkins\nDate of Birth: 1988-04-12\nSocial Security Number / National ID: 483-92-1049\nPrimary Phone: +1 (555) 382-9102\nSecondary Phone: +1 (555) 902-1148\nEmail Address: s.jenkins88@example-mail.com\nResidential Address: 742 Evergreen Terrace, Springfield, OR 97477\nIP Address: 192.168.1.142 / 2001:0db8:85a3:0000:0000:8a2e:0370:7334\n[FINANCIAL DETAILS]\nCredit Card Number: 4532-8910-4321-9081\nCard Expiration: 08/28\nCVV: 492\nBank Account (IBAN): US39 OBAK 0123 4567 8901 23\nBilling Address: 742 Evergreen Terrace, Springfield, OR 97477\n[CUSTOMER SUPPORT TRANSCRIPT]\n[09:14:22] Sarah Jenkins: Hi, I'm calling regarding an unexpected charge on my account ending in 9081. My name is Sarah Jenkins, born April 12, 1988.\n[09:15:02] Agent 4092: Hello Ms. Jenkins. I can help with that. To verify your identity, could you please confirm your full billing address and the last four digits of your SSN?\n[09:15:20] Sarah Jenkins: Yes, it's 742 Evergreen Terrace, Springfield, Oregon, 97477, and the last four of my SSN are 1049.\n[09:16:05] Agent 4092: Thank you, Sarah. I have pulled up your record. I see the charge made on 2026-10-10 using your visa card 4532-8910-4321-9081.\n[09:16:40] Sarah Jenkins: Right, that wasn't me. Please send the refund confirmation to s.jenkins88@example-mail.com or text me at 555-382-9102.\n[09:17:10] Agent 4092: I have initiated the chargeback to your account at US39 OBAK 0123 4567 8901 23. You will receive a confirmation email shortly.\n--------------------------------------------------------------------------------\nRECORD ID: REC-2026-08913\nTIMESTAMP: 2026-10-14T11:02:15Z\nAGENT ID: AGENT_1022\n[CUSTOMER PROFILE]\nFull Name: Dr. Marcus Aurelius Vance\nDate of Birth: 1975-11-30\nPassport Number: N89201492\nDriver's License ID: DL-8830192-OR\nPrimary Phone: +1 (555) 712-4091\n\n\nEmail Address: m.vance@vanceresearch-labs.org\nWork Address: 100 Cyberdyne Way, Suite 400, Portland, OR 97201\n[INTERNAL NOTES & HEALTH INFORMATION]\nMedical Case Ref: MC-9021-X\nPatient/Member ID: MEM-309182\nNotes: Customer requested emergency dispensation update. Dr. Vance noted a history of penicillin allergy and recent prescription adjustment for Hypertension. Emergency contact is Elena Vance (Spouse) reachable at 555-712-4099.\n================================================================================\nEND OF TEST DATA FILE\n================================================================================",
+        "file_name": "sample_pii_test_data.pdf",
+        "file_path": "/Users/snigdhasahoo/DSAR/data/sample_pii_test_data.pdf",
+        "origin": [
+            {
+                "instantiation_index": 1,
+                "tool": "orchestrator_supervisor_agent"
+            },
+            {
+                "instantiation_index": 1,
+                "tool": "final_obfuscation_encoding_agent"
+            },
+            {
+                "instantiation_index": 2,
+                "tool": "redact_document"
+            }
+        ],
+        "origin_str": "orchestrator_supervisor_agent.final_obfuscation_encoding_agent.redact_document-02",
+        "output_dir": "/Users/snigdhasahoo/DSAR/data",
+        "requestor_name": "Sarah Elizabeth Jenkins",
+        "target_file_name": "sample_pii_test_data_redacted.pdf"
+    },
+    "tool_start": true
+}
+```
+
+[AGENT] @ 2026-10-19 17:37:06:
+Got result:
+```json
+{
+    "tool_end": true,
+    "tool_error": true,
+    "tool_output": "Error: leakage_verification_failed: Output PDF failed verification: [\"Sensitive entity leaked in output PDF: 'Elena Vance'\"]"
+}
+```
+
+[AGENT] @ 2026-10-19 17:43:36:
+Received arguments:
+```json
+{
+    "tool_args": {
+        "approved_spans": [
+            {
+                "category": "PHI.MEDICAL_IDENTIFIER",
+                "field_id": "F01",
+                "mask_mode": "full",
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "text": "REC-2026-08912"
+            },
+            {
+                "category": "PII.IDENTIFIER.EMPLOYEE_ID",
+                "field_id": "F02",
+                "mask_mode": "full",
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "text": "AGENT_4092"
+            },
+            {
+                "category": "PII.DEMOGRAPHIC.DATE_OF_BIRTH",
+                "field_id": "F03",
+                "mask_mode": "full",
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "text": "1988-04-12"
+            },
+            {
+                "category": "PII.IDENTIFIER.SSN",
+                "field_id": "F04",
+                "mask_mode": "partial",
+                "replacement": "\u25a0\u25a0\u25a0-\u25a0\u25a0-1049",
+                "text": "483-92-1049"
+            },
+            {
+                "category": "PII.CONTACT.PHONE_NUMBER",
+                "field_id": "F05",
+                "mask_mode": "partial",
+                "replacement": "+1 (\u25a0\u25a0\u25a0) \u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0\u25a0",
+                "text": "+1 (555) 382-9102"
+            },
+            {
+                "category": "PII.CONTACT.PHONE_NUMBER",
+                "field_id": "F06",
+                "mask_mode": "partial",
+                "replacement": "+1 (\u25a0\u25a0\u25a0) \u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0\u25a0",
+                "text": "+1 (555) 902-1148"
+            },
+            {
+                "all_occurrences": true,
+                "category": "PII.CONTACT.EMAIL",
+                "field_id": "F07",
+                "mask_mode": "partial",
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0@example-mail.com",
+                "text": "s.jenkins88@example-mail.com"
+            },
+            {
+                "all_occurrences": true,
+                "category": "PII.LOCATION.STREET_ADDRESS",
+                "field_id": "F08",
+                "mask_mode": "partial",
+                "replacement": "\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0, Springfield, OR 97477",
+                "text": "742 Evergreen Terrace, Springfield, OR 97477"
+            },
+            {
+                "category": "PII.LOCATION.IP_ADDRESS",
+                "field_id": "F09",
+                "mask_mode": "partial",
+                "replacement": "\u25a0\u25a0\u25a0.\u25a0\u25a0\u25a0.\u25a0.\u25a0\u25a0\u25a0",
+                "text": "192.168.1.142"
+            },
+            {
+                "category": "PII.LOCATION.IP_ADDRESS",
+                "field_id": "F10",
+                "mask_mode": "full",
+                "replacement": "\u25a0\u25a0\u25a0\u25a0:\u25a0\u25a0\u25a0\u25a0:\u25a0\u25a0\u25a0\u25a0:\u25a0\u25a0\u25a0\u25a0:\u25a0\u25a0\u25a0\u25a0:\u25a0\u25a0\u25a0\u25a0:\u25a0\u25a0\u25a0\u25a0:\u25a0\u25a0\u25a0\u25a0",
+                "text": "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
+            },
+            {
+                "all_occurrences": true,
+                "category": "PII.FINANCIAL.CREDIT_CARD",
+                "field_id": "F11",
+                "mask_mode": "partial",
+                "replacement": "\u25a0\u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0\u25a0-9081",
+                "text": "4532-8910-4321-9081"
+            },
+            {
+                "all_occurrences": true,
+                "category": "PII.FINANCIAL.IBAN",
+                "field_id": "F12",
+                "mask_mode": "partial",
+                "replacement": "US39 \u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0 23",
+                "text": "US39 OBAK 0123 4567 8901 23"
+            },
+            {
+                "category": "PII.LOCATION.STREET_ADDRESS",
+                "field_id": "F14",
+                "mask_mode": "partial",
+                "replacement": "\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0, Springfield, Oregon, 97477",
+                "text": "742 Evergreen Terrace, Springfield, Oregon, 97477"
+            },
+            {
+                "category": "PII.CONTACT.PHONE_NUMBER",
+                "field_id": "F17",
+                "mask_mode": "partial",
+                "replacement": "\u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0\u25a0",
+                "text": "555-382-9102"
+            },
+            {
+                "category": "PHI.MEDICAL_IDENTIFIER",
+                "field_id": "F19",
+                "mask_mode": "full",
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "text": "REC-2026-08913"
+            },
+            {
+                "category": "PII.IDENTIFIER.EMPLOYEE_ID",
+                "field_id": "F20",
+                "mask_mode": "full",
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "text": "AGENT_1022"
+            },
+            {
+                "category": "PII.PERSON_NAME",
+                "field_id": "F21",
+                "mask_mode": "full",
+                "replacement": "\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0",
+                "text": "Dr. Marcus Aurelius Vance"
+            },
+            {
+                "category": "PII.DEMOGRAPHIC.DATE_OF_BIRTH",
+                "field_id": "F22",
+                "mask_mode": "full",
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "text": "1975-11-30"
+            },
+            {
+                "category": "PII.IDENTIFIER.PASSPORT",
+                "field_id": "F23",
+                "mask_mode": "full",
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "text": "N89201492"
+            },
+            {
+                "category": "PII.IDENTIFIER.DRIVERS_LICENSE",
+                "field_id": "F24",
+                "mask_mode": "full",
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "text": "DL-8830192-OR"
+            },
+            {
+                "category": "PII.CONTACT.PHONE_NUMBER",
+                "field_id": "F25",
+                "mask_mode": "partial",
+                "replacement": "+1 (\u25a0\u25a0\u25a0) \u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0\u25a0",
+                "text": "+1 (555) 712-4091"
+            },
+            {
+                "category": "PII.CONTACT.EMAIL",
+                "field_id": "F26",
+                "mask_mode": "partial",
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0@vanceresearch-labs.org",
+                "text": "m.vance@vanceresearch-labs.org"
+            },
+            {
+                "category": "PII.LOCATION.STREET_ADDRESS",
+                "field_id": "F27",
+                "mask_mode": "partial",
+                "replacement": "\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0, \u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0, Portland, OR 97201",
+                "text": "100 Cyberdyne Way, Suite 400, Portland, OR 97201"
+            },
+            {
+                "category": "PHI.MEDICAL_IDENTIFIER",
+                "field_id": "F28",
+                "mask_mode": "full",
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "text": "MC-9021-X"
+            },
+            {
+                "category": "PHI.MEDICAL_IDENTIFIER",
+                "field_id": "F29",
+                "mask_mode": "full",
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "text": "MEM-309182"
+            },
+            {
+                "category": "PHI.HEALTH_DATA",
+                "field_id": "F30",
+                "mask_mode": "full",
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "text": "emergency dispensation"
+            },
+            {
+                "category": "PII.PERSON_NAME",
+                "field_id": "F31",
+                "mask_mode": "full",
+                "replacement": "\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0",
+                "text": "Dr. Vance"
+            },
+            {
+                "category": "PHI.HEALTH_DATA",
+                "field_id": "F32",
+                "mask_mode": "full",
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "text": "penicillin allergy"
+            },
+            {
+                "category": "PHI.HEALTH_DATA",
+                "field_id": "F33",
+                "mask_mode": "full",
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "text": "prescription adjustment"
+            },
+            {
+                "category": "PHI.HEALTH_DATA",
+                "field_id": "F34",
+                "mask_mode": "full",
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0",
+                "text": "Hypertension"
+            },
+            {
+                "category": "PII.PERSON_NAME",
+                "field_id": "F35",
+                "mask_mode": "full",
+                "replacement": "\u25a0\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0\u25a0\u25a0\u25a0",
+                "text": "Elena Vance"
+            },
+            {
+                "category": "PII.CONTACT.PHONE_NUMBER",
+                "field_id": "F36",
+                "mask_mode": "partial",
+                "replacement": "\u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0-\u25a0\u25a0\u25a0\u25a0",
+                "text": "555-712-4099"
+            },
+            {
+                "anchor": "born April 12, 1988",
+                "category": "PII.DEMOGRAPHIC.DATE_OF_BIRTH",
+                "field_id": "F37",
+                "mask_mode": "partial",
+                "replacement": "\u25a0\u25a0\u25a0\u25a0 \u25a0\u25a0, 1988",
+                "text": "April 12, 1988"
+            },
+            {
+                "anchor": "CVV: 492",
+                "category": "PII.FINANCIAL.CVV",
+                "field_id": "F38",
+                "mask_mode": "full",
+                "replacement": "\u25a0\u25a0\u25a0",
+                "text": "492"
+            },
+            {
+                "anchor": "Card Expiration: 08/28",
+                "category": "PII.FINANCIAL.CARD_EXPIRY",
+                "field_id": "F39",
+                "mask_mode": "full",
+                "replacement": "\u25a0\u25a0/\u25a0\u25a0",
+                "text": "08/28"
+            }
+        ],
+        "content": "CUSTOMER SUPPORT & DSAR REQUEST LOGS - TEST DATASET\n================================================================================\nRECORD ID: REC-2026-08912\nTIMESTAMP: 2026-10-14T09:14:22Z\nAGENT ID: AGENT_4092\n[CUSTOMER PROFILE]\nFull Name: Sarah Elizabeth Jenkins\nDate of Birth: 1988-04-12\nSocial Security Number / National ID: 483-92-1049\nPrimary Phone: +1 (555) 382-9102\nSecondary Phone: +1 (555) 902-1148\nEmail Address: s.jenkins88@example-mail.com\nResidential Address: 742 Evergreen Terrace, Springfield, OR 97477\nIP Address: 192.168.1.142 / 2001:0db8:85a3:0000:0000:8a2e:0370:7334\n[FINANCIAL DETAILS]\nCredit Card Number: 4532-8910-4321-9081\nCard Expiration: 08/28\nCVV: 492\nBank Account (IBAN): US39 OBAK 0123 4567 8901 23\nBilling Address: 742 Evergreen Terrace, Springfield, OR 97477\n[CUSTOMER SUPPORT TRANSCRIPT]\n[09:14:22] Sarah Jenkins: Hi, I\u2019m calling regarding an unexpected charge on my account ending in 9081. My name is Sarah Jenkins, born April 12, 1988.\n[09:15:02] Agent 4092: Hello Ms. Jenkins. I can help with that. To verify your identity, could you please confirm your full billing address and the last four digits of your SSN?\n[09:15:20] Sarah Jenkins: Yes, it\u2019s 742 Evergreen Terrace, Springfield, Oregon, 97477, and the last four of my SSN are 1049.\n[09:16:05] Agent 4092: Thank you, Sarah. I have pulled up your record. I see the charge made on 2026-10-10 using your visa card 4532-8910-4321-9081.\n[09:16:40] Sarah Jenkins: Right, that wasn\u2019t me. Please send the refund confirmation to s.jenkins88@example-mail.com or text me at 555-382-9102.\n[09:17:10] Agent 4092: I have initiated the chargeback to your account at US39 OBAK 0123 4567 8901 23. You will receive a confirmation email shortly.\n--------------------------------------------------------------------------------\nRECORD ID: REC-2026-08913\nTIMESTAMP: 2026-10-14T11:02:15Z\nAGENT ID: AGENT_1022\n[CUSTOMER PROFILE]\nFull Name: Dr. Marcus Aurelius Vance\nDate of Birth: 1975-11-30\nPassport Number: N89201492\nDriver\u2019s License ID: DL-8830192-OR\nPrimary Phone: +1 (555) 712-4091\n\nEmail Address: m.vance@vanceresearch-labs.org\nWork Address: 100 Cyberdyne Way, Suite 400, Portland, OR 97201\n[INTERNAL NOTES & HEALTH INFORMATION]\nMedical Case Ref: MC-9021-X\nPatient/Member ID: MEM-309182\nNotes: Customer requested emergency dispensation update. Dr. Vance noted a history of penicillin allergy and recent prescription adjustment for Hypertension. Emergency contact is Elena Vance (Spouse) reachable at 555-712-4099.\n================================================================================\nEND OF TEST DATA FILE\n================================================================================",
+        "file_name": "sample_pii_test_data.pdf",
+        "file_path": "/Users/snigdhasahoo/DSAR/data/sample_pii_test_data.pdf",
+        "origin": [
+            {
+                "instantiation_index": 1,
+                "tool": "orchestrator_supervisor_agent"
+            },
+            {
+                "instantiation_index": 1,
+                "tool": "final_obfuscation_encoding_agent"
+            },
+            {
+                "instantiation_index": 2,
+                "tool": "redact_document"
+            }
+        ],
+        "origin_str": "orchestrator_supervisor_agent.final_obfuscation_encoding_agent.redact_document-02",
+        "output_dir": "/Users/snigdhasahoo/DSAR/data",
+        "requestor_name": "Sarah Elizabeth Jenkins",
+        "target_file_name": "sample_pii_test_data_redacted.pdf"
+    },
+    "tool_start": true
+}
+```
+
+[AGENT] @ 2026-10-19 17:43:36:
+Got result:
+```json
+{
+    "tool_end": true,
+    "tool_error": true,
+    "tool_output": "Error: leakage_verification_failed: Redaction aborted to prevent writing cleartext: [\"Raw sensitive value leaked: 'US39 OBAK 0123 4567 8901 23' for category 'PII.FINANCIAL.IBAN'\", \"Raw sensitive value leaked: '742 Evergreen Terrace, Springfield, OR 97477' for category 'PII.LOCATION.STREET_ADDRESS'\", \"Email username leaked: 's.jenkins88'\"]"
+}
+```

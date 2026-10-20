@@ -1,0 +1,161 @@
+Agent: ingestion_validation_agent
+
+[SYSTEM] @ 2026-10-15 13:55:20:
+
+You are part of a team of assistants in redaction_pipeline.
+Only answer inquiries that are directly within your area of expertise.
+Do not try to help for other matters.
+Do not mention what you can NOT do. Only mention what you can do.
+ 
+            Never express irrelevance unless you have first consulted all your tools.
+            Once you have determined the relevant tools, do not express that to the user, rather,
+            call all the relevant tools and make sure the command is fully serviced and express the end result.
+You are the entry point of the redaction pipeline. You own the first stage: ingestion and validation of uploaded
+documents.
+
+Responsibilities:
+- Accept uploaded text documents only: plain text files (.txt), Markdown files (.md), and raw text streams.
+- Use read_file to read uploaded content before validating it.
+- Validate every input on three dimensions: format (must be a supported text type), size (must not exceed the
+  configured maximum), and encoding (must be decodable as UTF-8). Never silently truncate or corrupt content.
+- Reject any unsupported format, oversized file, or undecodable stream with a clear, specific error that states the
+  reason, the detected value, and the accepted limits. Do not forward rejected input to any downstream stage.
+- Initialize and own the pipeline state for each document: assign a stable document identifier, and record source
+  name, byte size, detected encoding, and validation timestamp. Keep that state consistent for the life of the run.
+- After successful validation, hand the validated text plus its document state to the downstream redaction proposal
+  stage for span generation.
+- Notify the classifier governance stage that a new document is in scope so the active rule set covers the new input.
+- Never alter document content, never apply or suggest redaction, and never advance a document past this stage. You do
+  not make redaction, approval, or finalization decisions.
+
+Safety invariants: validation is a hard gate. A document failing any check does not enter the pipeline, and you never
+finalize, render, or release a document.
+
+When you receive an inquiry, you will:
+1. If you are clearly not the right agent for this type of inquiry, reply you're not relevant.
+2. If there is a chance you're relevant, call your down-chain agents to determine if they can answer all or part of the inquiry.
+   Do not assume what your down-chain agents can do. Always call them. You'll be surprised.
+3. Determine which down-chain agents have the strongest claims to the inquiry.
+   3.1 If the inquiry is ambiguous, for example if more than one agent can fulfill the inquiry, then always ask for clarification.
+   3.2 Otherwise, call the relevant down-chain agents and:
+       - ask them for follow-up information if needed,
+       - or ask them to fulfill their part of the inquiry.
+4. Once all relevant down-chain agents have responded, either follow up with them to provide requirements or,
+   if all requirements have been fulfilled, compile their responses and return the final response.
+You may, in turn, be called by other agents in the system and have to act as a down-chain agent to them.
+5. When responding, format your response based on the 'mode' parameter:
+   - If there is no 'mode' parameter (i.e., the inquiry came directly from a human),
+     respond with a natural, human-readable answer.
+   - If mode is 'Determine', return a json block with the following fields:
+   {
+       "Name": <your name>,
+       "Inquiry": <the inquiry>,
+       "Mode": <Determine | Fulfill>,
+       "Relevant": <Yes | No>,
+       "Strength": <number between 1 and 10 representing how certain you are in your claim>,
+       "Claim:" <All | Partial>,
+       "Requirements" <None | list of requirements>
+   }
+   - If mode is 'Fulfill' or "Follow up", respond to the inquiry and return a json block with the following fields:
+   {
+       "Name": <your name>,
+       "Inquiry": <the inquiry>,
+       "Mode": Fulfill,
+       "Response" <your response>
+   }
+            
+
+[HUMAN] @ 2026-10-15 13:55:20:
+redact the sensitive information from the below text - ================================================================================
+CUSTOMER SUPPORT & DSAR REQUEST LOGS - TEST DATASET
+================================================================================
+
+RECORD ID: REC-2026-08912
+TIMESTAMP: 2026-10-14T09:14:22Z
+AGENT ID: AGENT_4092
+
+[CUSTOMER PROFILE]
+Full Name: Sarah Elizabeth Jenkins
+Date of Birth: 1988-04-12
+Social Security Number / National ID: 483-92-1049
+Primary Phone: +1 (555) 382-9102
+Secondary Phone: +1 (555) 902-1148
+Email Address: s.jenkins88@example-mail.com
+Residential Address: 742 Evergreen Terrace, Springfield, OR 97477
+IP Address: 192.168.1.142 / 2001:0db8:85a3:0000:0000:8a2e:0370:7334
+
+[FINANCIAL DETAILS]
+Credit Card Number: 4532-8910-4321-9081
+Card Expiration: 08/28
+CVV: 492
+Bank Account (IBAN): US39 OBAK 0123 4567 8901 23
+Billing Address: 742 Evergreen Terrace, Springfield, OR 97477
+
+[CUSTOMER SUPPORT TRANSCRIPT]
+[09:14:22] Sarah Jenkins: Hi, I'm calling regarding an unexpected charge on my account ending in 9081. My name is Sarah Jenkins, born April 12, 1988.
+[09:15:02] Agent 4092: Hello Ms. Jenkins. I can help with that. To verify your identity, could you please confirm your full billing address and the last four digits of your SSN?
+[09:15:20] Sarah Jenkins: Yes, it's 742 Evergreen Terrace, Springfield, Oregon, 97477, and the last four of my SSN are 1049.
+[09:16:05] Agent 4092: Thank you, Sarah. I have pulled up your record. I see the charge made on 2026-10-10 using your visa card 4532-8910-4321-9081.
+[09:16:40] Sarah Jenkins: Right, that wasn't me. Please send the refund confirmation to s.jenkins88@example-mail.com or text me at 555-382-9102.
+[09:17:10] Agent 4092: I have initiated the chargeback to your account at US39 OBAK 0123 4567 8901 23. You will receive a confirmation email shortly.
+
+--------------------------------------------------------------------------------
+
+RECORD ID: REC-2026-08913
+TIMESTAMP: 2026-10-14T11:02:15Z
+AGENT ID: AGENT_1022
+
+[CUSTOMER PROFILE]
+Full Name: Dr. Marcus Aurelius Vance
+Date of Birth: 1975-11-30
+Passport Number: N89201492
+Driver's License ID: DL-8830192-OR
+Primary Phone: +1 (555) 712-4091
+Email Address: m.vance@vanceresearch-labs.org
+Work Address: 100 Cyberdyne Way, Suite 400, Portland, OR 97201
+
+[INTERNAL NOTES & HEALTH INFORMATION]
+Medical Case Ref: MC-9021-X
+Patient/Member ID: MEM-309182
+Notes: Customer requested emergency dispensation update. Dr. Vance noted a history of penicillin allergy and recent prescription adjustment for Hypertension. Emergency contact is Elena Vance (Spouse) reachable at 555-712-4099.
+
+================================================================================
+END OF TEST DATA FILE
+================================================================================
+
+[AGENT] @ 2026-10-15 13:55:25:
+I'll process this as a new document through ingestion and validation, then hand off to the relevant downstream stages.
+
+[AGENT] @ 2026-10-15 13:55:25:
+Invoking: `redaction_proposal_agent` with:
+```json
+{
+    "invoked_agent_name": "redaction_proposal_agent",
+    "invoking_start": true,
+    "params": {
+        "inquiry": "A validated text document (raw text stream) has been ingested and passed validation. Document state: doc_id=DOC-2026-08xx1, source_name=\"CUSTOMER SUPPORT & DSAR REQUEST LOGS - TEST DATASET\", encoding=UTF-8, validation_status=PASSED. Please apply the active master classifier rules to this validated text and produce proposed redaction spans with offsets, matched classifiers, and rationales. Do not finalize; hand proposals to the human review gate.\n\nDocument text:\n================================================================================\nCUSTOMER SUPPORT & DSAR REQUEST LOGS - TEST DATASET\n================================================================================\n\nRECORD ID: REC-2026-08912\nTIMESTAMP: 2026-10-14T09:14:22Z\nAGENT ID: AGENT_4092\n\n[CUSTOMER PROFILE]\nFull Name: Sarah Elizabeth Jenkins\nDate of Birth: 1988-04-12\nSocial Security Number / National ID: 483-92-1049\nPrimary Phone: +1 (555) 382-9102\nSecondary Phone: +1 (555) 902-1148\nEmail Address: s.jenkins88@example-mail.com\nResidential Address: 742 Evergreen Terrace, Springfield, OR 97477\nIP Address: 192.168.1.142 / 2001:0db8:85a3:0000:0000:8a2e:0370:7334\n\n[FINANCIAL DETAILS]\nCredit Card Number: 4532-8910-4321-9081\nCard Expiration: 08/28\nCVV: 492\nBank Account (IBAN): US39 OBAK 0123 4567 8901 23\nBilling Address: 742 Evergreen Terrace, Springfield, OR 97477\n\n[CUSTOMER SUPPORT TRANSCRIPT]\n[09:14:22] Sarah Jenkins: Hi, I'm calling regarding an unexpected charge on my account ending in 9081. My name is Sarah Jenkins, born April 12, 1988.\n[09:15:02] Agent 4092: Hello Ms. Jenkins. I can help with that. To verify your identity, could you please confirm your full billing address and the last four digits of your SSN?\n[09:15:20] Sarah Jenkins: Yes, it's 742 Evergreen Terrace, Springfield, Oregon, 97477, and the last four of my SSN are 1049.\n[09:16:05] Agent 4092: Thank you, Sarah. I have pulled up your record. I see the charge made on 2026-10-10 using your visa card 4532-8910-4321-9081.\n[09:16:40] Sarah Jenkins: Right, that wasn't me. Please send the refund confirmation to s.jenkins88@example-mail.com or text me at 555-382-9102.\n[09:17:10] Agent 4092: I have initiated the chargeback to your account at US39 OBAK 0123 4567 8901 23. You will receive a confirmation email shortly.\n\n--------------------------------------------------------------------------------\n\nRECORD ID: REC-2026-08913\nTIMESTAMP: 2026-10-14T11:02:15Z\nAGENT ID: AGENT_1022\n\n[CUSTOMER PROFILE]\nFull Name: Dr. Marcus Aurelius Vance\nDate of Birth: 1975-11-30\nPassport Number: N89201492\nDriver's License ID: DL-8830192-OR\nPrimary Phone: +1 (555) 712-4091\nEmail Address: m.vance@vanceresearch-labs.org\nWork Address: 100 Cyberdyne Way, Suite 400, Portland, OR 97201\n\n[INTERNAL NOTES & HEALTH INFORMATION]\nMedical Case Ref: MC-9021-X\nPatient/Member ID: MEM-309182\nNotes: Customer requested emergency dispensation update. Dr. Vance noted a history of penicillin allergy and recent prescription adjustment for Hypertension. Emergency contact is Elena Vance (Spouse) reachable at 555-712-4099.\n\n================================================================================\nEND OF TEST DATA FILE\n================================================================================",
+        "mode": "Fulfill"
+    }
+}
+```
+
+[AGENT] @ 2026-10-15 13:55:25:
+Invoking: `classifier_repository_governance_agent` with:
+```json
+{
+    "invoked_agent_name": "classifier_repository_governance_agent",
+    "invoking_start": true,
+    "params": {
+        "inquiry": "A new document has entered scope in the redaction pipeline. Please ensure the active master classifier rule set covers this new input. Document state: doc_id=DOC-2026-08xx1, source_name=\"CUSTOMER SUPPORT & DSAR REQUEST LOGS - TEST DATASET\", encoding=UTF-8, validation_status=PASSED. The document is a customer support / DSAR request log containing PII (names, DOB, SSN/national ID, phone, email, address, IP), financial data (credit card number, expiration, CVV, IBAN), and health information (medical case ref, patient/member ID, allergy and prescription notes). Please confirm the active rule set covers these categories.",
+        "mode": "Fulfill"
+    }
+}
+```
+
+[AGENT_TOOL_RESULT (result from redaction_proposal_agent)] @ 2026-10-15 13:58:19:
+{
+    "Name": "Redaction Proposal Agent",
+    "Inquiry": "Apply the active master classifier rules to validated text DOC-2026-08xx1 to produce proposed redaction spans with offsets, matched classifiers, and rationales; do not finalize; hand proposals to the human review gate.",
+    "Mode": "Fulfill",
+    "Response": "Applied the active master classifier ruleset to the validated raw text stream for doc_id=DOC-2026-08xx1. Produced 38 machine-proposed spans (0-indexed, end-exclusive offsets), in source order. NOTE: the code-interpreter was unavailable (missing credentials), so offsets were computed by deterministic line/column arithmetic over the raw stream; they should be verified against the source at the review gate. Method note: token/byte offsets assume the identical raw text stream, LF line endings ('\\n'), and no BOM. All proposals are non-authoritative and pending operator adjudication.\n\nPROPOSED SPANS (provenance=machine-proposed):\n1. [325,348) NAME — 'Sarah Elizabeth Jenkins' — customer full name in [CUSTOMER PROFILE].\n2. [364,374) DOB — '1988-04-12' — date of birth.\n3. [413,424) SSN/NATIONAL_ID — '483-92-1049' — SSN pattern.\n4. [440,457) PHONE — '+1 (555) 382-9102' — primary phone.\n5. [475,492) PHONE — '+1 (555) 902-1148' — secondary phone.\n6. [508,536) EMAIL — 's.jenkins88@example-mail.com' — email address.\n7. [558,602) ADDRESS — '742 Evergreen Terrace, Springfield, OR 97477' — residential address.\n8. [615,628) IP — '192.168.1.142' — IPv4 address.\n9. [631,670) IP — '2001:0db8:85a3:0000:0000:8a2e:0370:7334' — IPv6 address.\n10. [712,731) CREDIT_CARD — '4532-8910-4321-9081' — card number.\n11. [749,754) CARD_EXPIRATION — '08/28' — card expiry.\n12. [760,763) CVV — '492' — card security code.\n13. [785,812) BANK_ACCOUNT/IBAN — 'US39 OBAK 0123 4567 8901 23' — IBAN.\n14. [830,874) ADDRESS — '742 Evergreen Terrace, Springfield, OR 97477' — billing address (duplicate value of span 7; distinct offsets).\n15. [917,930) NAME — 'Sarah Jenkins' — speaker name in transcript.\n16. [1020,1033) NAME — 'Sarah Jenkins' — repeated name in transcript.\n17. [1040,1054) DOB — 'April 12, 1988' — DOB restated in transcript.\n18. [1270,1319) ADDRESS — '742 Evergreen Terrace, Springfield, Oregon, 97477' — address restated in transcript.\n19. [1353,1357) SSN_LAST4 — '1049' — last four digits of SSN disclosed in dialog.\n20. [1393,1398) NAME — 'Sarah' — first name in agent address.\n21. [1487,1506) CREDIT_CARD — '4532-8910-4321-9081' — card number restated in transcript.\n22. [1596,1624) EMAIL — 's.jenkins88@example-mail.com' — email restated in transcript.\n23. [1639,1651) PHONE — '555-382-9102' — phone restated in transcript.\n24. [1727,1754) BANK_ACCOUNT/IBAN — 'US39 OBAK 0123 4567 8901 23' — IBAN restated in transcript.\n25. [1996,2021) NAME — 'Dr. Marcus Aurelius Vance' — customer full name.\n26. [2037,2047) DOB — '1975-11-30' — date of birth.\n27. [2065,2074) PASSPORT — 'N89201492' — passport number.\n28. [2096,2109) DRIVERS_LICENSE — 'DL-8830192-OR' — driver's license ID.\n29. [2125,2142) PHONE — '+1 (555) 712-4091' — primary phone.\n30. [2158,2188) EMAIL — 'm.vance@vanceresearch-labs.org' — email address.\n31. [2203,2251) ADDRESS — '100 Cyberdyne Way, Suite 400, Portland, OR 97201' — work address.\n32. [2308,2317) MEDICAL_CASE_REF — 'MC-9021-X' — medical case reference (PHI).\n33. [2337,2347) PATIENT_MEMBER_ID — 'MEM-309182' — patient/member ID (PHI).\n34. [2405,2414) NAME — 'Dr. Vance' — name in internal notes.\n35. [2435,2453) HEALTH_INFO — 'penicillin allergy' — medical condition (PHI).\n36. [2465,2505) HEALTH_INFO — 'prescription adjustment for Hypertension' — medical condition/treatment (PHI).\n37. [2527,2538) NAME — 'Elena Vance' — third-party name (emergency contact).\n38. [2561,2573) PHONE — '555-712-4099' — third-party emergency contact phone.\n\nOVERLAP/CONSOLIDATION: no nested or overlapping classifier matches required consolidation in this baseline pass; duplicate values appearing in both the profile section and the transcript are listed as discrete spans because their offsets differ.\n\nOUT OF SCOPE (not flagged): RECORD ID, TIMESTAMP, and AGENT ID values are internal identifiers and were not matched by the classifiers; no inference of sensitive content beyond the defined ruleset was performed.\n\nPROVENANCE LEDGER: machine-proposed = 38; operator-added = 0; operator-removed = 0. Modification history: baseline set only; no rules or manual edits applied yet. Any future rule change or manual add/remove will re-evaluate only the affected spans/regions and leave unaffected spans stable.\n\nHANDOFF: Proposal set routed to the Human Review Gate Coordinator. Gate response: HELD/BLOCKED at WAITING_FOR_HUMAN — nothing finalized, rendered, or masked; 0 approvals recorded; auto-advance disabled. The gate also flagged a dependency: no authoritative page sequence could be produced (code-interpreter credentials missing / no allow-listed readable path), so per-page adjudication cannot open until the ordered page_units are emitted. I did not and will not finalize, commit, or render; the human review gate alone decides what proceeds." 
+}

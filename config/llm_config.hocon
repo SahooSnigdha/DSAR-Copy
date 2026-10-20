@@ -1,0 +1,16 @@
+{
+    "llm_config"{
+         "fallbacks": [
+            {
+               "class": "openrouter",
+                "base_url": "https://openrouter.ai/api/v1",
+                "model_name": "openrouter/auto"
+                },
+            {
+                "class": "ollama",
+                "model_name": "llama3.2",
+                "base_url": "http://127.0.0.1:11434"
+            }   
+         ]    
+    }
+}

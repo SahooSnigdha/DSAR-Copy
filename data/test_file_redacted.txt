@@ -1,0 +1,26 @@
+USER ACCOUNT & SYSTEM LOG RECORD
+Full Name: ■■■■■■ ■■■■■■■■ ■■■■■
+System Username: ■■■■■■■■■■■■■
+Email Address: ■■■■■■■@vanceresearch-labs.org
+Primary Phone: +1 (■■■) ■■■-■■■■
+User Role: Senior Systems Administrator
+Passport Number: ■■■■■■■■■
+Last Login IP: ■■■.■■■.■■.■■
+Residential Address: ■■■ ■■■■■■■■■ ■■■, ■■■■■ ■■■, Portland, OR 97201
+Social Security Number: ■■■-■■-1049
+Health Insurance Number: HI-■■■■■■■■■-B
+Bank Account (IBAN): US39 ■■■■ ■■■■ ■■■■ ■■■■ 23
+Transaction Summary
+Date Type Amount Method
+2026-08-15 Monthly 
+Subscription
+$49.99 Visa Card ■■■■-
+■■■■-■■■■-9081
+2026-09-02 Inbound Transfer $2,500.00 Bank Transfer US39 
+OBAK
+2026-09-18 Equipment 
+Purchase
+$320.50 Visa Card ■■■■-
+■■■■-■■■■-9081
+2026-10-10 Outbound Transfer $1,250.00 Visa Card ■■■■-
+■■■■-■■■■-9081

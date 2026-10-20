@@ -1,0 +1,457 @@
+# Master Data Classifiers (Revision rev-003, Ruleset 1.2.0)
+
+```yaml
+active_revision_id: rev-003
+ruleset_version: 1.2.0
+status: PINNED
+metadata:
+  title: Master Data Classifiers Ruleset
+  revision: 3
+  revision_id: rev-003
+  ruleset_version: 1.2.0
+  created_at: '2026-10-19T15:40:00Z'
+  created_by: Human Admin
+  approval_actor: ADMIN-ROOT-001
+  approval_token: AUTH-TOKEN-ADMIN-REV3-APPROVED-20261019-ROOT
+  approval_timestamp: '2026-10-19T15:40:00Z'
+  integrity_hash: sha256-rev3-master-data-classifiers-pinned
+  description: Revision 3 (rev-003) officially promoting UK identifiers (Sort Code,
+    Account Number, Postcode, NHS Number, NINO, Driving Licence, Vehicle Plate, UTR,
+    +44 Telephone), conversational/spoken Date of Birth, and customer service agent/titled
+    names to authoritative pinned classifiers approved by Human Admin.
+categories:
+  PII:
+    description: Personally Identifiable Information
+    subcategories:
+      PERSON_NAME:
+        description: Full or partial names of individuals
+      IDENTIFIER:
+        description: Government or official identity numbers
+        types:
+        - SSN
+        - NATIONAL_ID
+        - PASSPORT
+        - DRIVERS_LICENSE
+        - USERNAME
+        - UK_NINO
+        - UK_DRIVING_LICENCE
+        - UK_VEHICLE_PLATE
+        - UK_UTR
+        - EMPLOYEE_ID
+      CONTACT:
+        description: Direct communication contact information
+        types:
+        - EMAIL
+        - PHONE_NUMBER
+      LOCATION:
+        description: Physical addresses and network locations
+        types:
+        - STREET_ADDRESS
+        - IP_ADDRESS
+        - UK_POSTCODE
+      FINANCIAL:
+        description: Banking, payment, and transaction identifiers
+        types:
+        - CREDIT_CARD
+        - BANK_ACCOUNT
+        - IBAN
+        - CVV
+        - UK_SORT_CODE
+        - BANK_ACCOUNT_NUMBER
+      DEMOGRAPHIC:
+        description: Personal demographic attributes
+        types:
+        - DATE_OF_BIRTH
+  PHI:
+    description: Protected Health Information
+    subcategories:
+      MEDICAL_IDENTIFIER:
+        description: Patient, member, or clinical record identifiers
+        types:
+        - PATIENT_ID
+        - MEDICAL_CASE_REF
+        - HEALTH_INSURANCE_MEMBER_ID
+        - UK_NHS_NUMBER
+      HEALTH_DATA:
+        description: Medical conditions, diagnoses, allergies, and prescriptions
+        types:
+        - ALLERGY
+        - CONDITION
+        - PRESCRIPTION
+        - CLINICAL_NOTE
+classifiers:
+- classifier_id: CLS-PII-SSN-001
+  name: Social Security Number / National ID
+  category: PII.IDENTIFIER.SSN
+  type: regex
+  pattern: \b\d{3}-\d{2}-\d{4}\b
+  confidence_threshold: 0.95
+  priority: 1
+  mask_token: '[SSN]'
+  description: Standard 9-digit US Social Security Number in AAA-GG-SSSS format.
+  mask_strategy: partial
+  partial_mask_description: Mask first 5 digits with solid black squares, preserve
+    last 4 digits and hyphens.
+- classifier_id: CLS-PII-CC-001
+  name: Credit Card Number
+  category: PII.FINANCIAL.CREDIT_CARD
+  type: regex
+  pattern: \b(?:(?:4\d{3}|5[1-5]\d{2}|6011|3[47]\d{2}|\d{4})(?:(?:-(?:\n|\r\n)?\d{4}-(?:(?:\n|\r\n)?\d{4})-(?:\n|\r\n)?\d{4})|(?:\s\d{4}\s\d{4}\s\d{4})))\b
+  confidence_threshold: 0.85
+  priority: 1
+  mask_token: '[CREDIT_CARD]'
+  description: Major credit card numbers with line-wrap support (Variant A hyphen-newline
+    normalization / D-8) and soft-fail Luhn validation.
+  validator: luhn_soft_fail
+  validator_rules:
+    luhn_pass_confidence: 0.99
+    luhn_fail_confidence: 0.86
+    threshold: 0.85
+  mask_strategy: partial
+  partial_mask_description: 'PCI DSS standard: mask all digits except the last 4 digits
+    with solid black squares, preserve delimiters/hyphens.'
+- classifier_id: CLS-PII-EMAIL-001
+  name: Email Address
+  category: PII.CONTACT.EMAIL
+  type: regex
+  pattern: \b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b
+  confidence_threshold: 0.95
+  priority: 2
+  mask_token: '[EMAIL]'
+  description: Standard RFC-compliant email address format.
+  mask_strategy: partial
+  partial_mask_description: Mask local username before @ with solid black squares,
+    preserve @ and domain name.
+- classifier_id: CLS-PII-PHONE-001
+  name: Telephone Number
+  category: PII.CONTACT.PHONE_NUMBER
+  type: regex
+  pattern: (?:\+?1[-. ]?)?(?:\(\d{3}\)|\b\d{3})[-. ]?\d{3}[-. ]?\d{4}\b
+  confidence_threshold: 0.9
+  priority: 2
+  mask_token: '[PHONE_NUMBER]'
+  description: North American phone numbers with optional country code, parentheses,
+    dashes, or dots.
+  mask_strategy: partial
+  partial_mask_description: Preserve country code (e.g. +1) and formatting punctuation,
+    mask area and subscriber digits with solid black squares.
+- classifier_id: CLS-PII-IP-001
+  name: IP Address (IPv4 & IPv6)
+  category: PII.LOCATION.IP_ADDRESS
+  type: regex
+  pattern: \b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b|\b(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\b
+  confidence_threshold: 0.9
+  priority: 3
+  mask_token: '[IP_ADDRESS]'
+  description: IPv4 dotted-decimal and IPv6 8-group addresses.
+  mask_strategy: full
+- classifier_id: CLS-PII-DOB-001
+  name: Date of Birth
+  category: PII.DEMOGRAPHIC.DATE_OF_BIRTH
+  type: regex
+  pattern: \b(?:19|20)\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])\b|\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+(?:0?[1-9]|[12]\d|3[01]),\s+(?:19|20)\d{2}\b
+  confidence_threshold: 0.85
+  priority: 3
+  mask_token: '[DATE_OF_BIRTH]'
+  description: ISO-8601 dates and month-name formatted dates of birth.
+  mask_strategy: full
+- classifier_id: CLS-PII-IBAN-001
+  name: Bank Account (IBAN)
+  category: PII.FINANCIAL.IBAN
+  type: regex
+  pattern: \b[A-Z]{2}\d{2}(?:\s?[A-Z0-9]{4}){3,7}(?:\s?[A-Z0-9]{1,4})?\b
+  confidence_threshold: 0.9
+  priority: 2
+  mask_token: '[IBAN]'
+  description: International Bank Account Numbers with optional spacing and variable-length
+    final block.
+  mask_strategy: partial
+  partial_mask_description: Preserve country code + check digits (first 4 chars) and
+    last 2-4 digits, mask routing and account alphanumeric chars with solid black
+    squares.
+- classifier_id: CLS-PII-PASSPORT-001
+  name: Passport Number
+  category: PII.IDENTIFIER.PASSPORT
+  type: regex
+  pattern: \b[A-Z]\d{8,9}\b
+  confidence_threshold: 0.85
+  priority: 3
+  mask_token: '[PASSPORT]'
+  description: Standard alphanumeric passport identifiers.
+  mask_strategy: full
+- classifier_id: CLS-PII-DL-001
+  name: Driver's License
+  category: PII.IDENTIFIER.DRIVERS_LICENSE
+  type: regex
+  pattern: \bDL-[A-Z0-9]{6,12}(?:-[A-Z]{2})?\b
+  confidence_threshold: 0.85
+  priority: 3
+  mask_token: '[DRIVERS_LICENSE]'
+  description: Standard state driver's license numbers with DL- prefix.
+  mask_strategy: full
+- classifier_id: CLS-PII-ADDRESS-001
+  name: Residential / Work Street Address
+  category: PII.LOCATION.STREET_ADDRESS
+  type: regex
+  pattern: \b\d{1,5}[ \t]+[A-Za-z0-9., \t]+(?:Terrace|Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Way|Lane|Ln|Drive|Dr)(?:,?[
+    \t]+(?:Suite|Ste|Apt|Unit|#)[ \t]+[A-Za-z0-9-]+)?,[ \t]+[A-Za-z \t]+,[ \t]+[A-Z]{2}[
+    \t]+\d{5}(?:-\d{4})?\b|\b\d{1,5}[ \t]+[A-Za-z0-9., \t]+(?:Terrace|Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Way|Lane|Ln|Drive|Dr)(?:,?[
+    \t]+(?:Suite|Ste|Apt|Unit|#)[ \t]+[A-Za-z0-9-]+)?\b
+  confidence_threshold: 0.85
+  priority: 4
+  mask_token: '[STREET_ADDRESS]'
+  description: Physical postal street address constrained to horizontal whitespace
+    to prevent newline over-matching.
+  mask_strategy: partial
+  partial_mask_description: Mask street number and street name with solid black squares,
+    preserve city, state, zip code.
+- classifier_id: CLS-PII-NAME-001
+  name: Full Name / Individual Name
+  category: PII.PERSON_NAME
+  type: ner
+  entity_types:
+  - PERSON
+  confidence_threshold: 0.8
+  priority: 5
+  mask_token: '[NAME]'
+  description: Named entity person recognizer for personal and professional names.
+  mask_strategy: full
+- classifier_id: CLS-PHI-MED-ID-001
+  name: Medical Case Ref / Patient Member ID
+  category: PHI.MEDICAL_IDENTIFIER
+  type: regex
+  pattern: \b(?:MC|MEM|PAT|REC)-[A-Za-z0-9-]{4,15}\b
+  confidence_threshold: 0.9
+  priority: 2
+  mask_token: '[MEDICAL_ID]'
+  description: Identifiers for medical case references, patient IDs, member IDs.
+  mask_strategy: full
+- classifier_id: CLS-PHI-CONDITION-001
+  name: Health Condition / Prescription / Allergy
+  category: PHI.HEALTH_DATA
+  type: dictionary_and_heuristic
+  terms:
+  - penicillin allergy
+  - allergy
+  - Hypertension
+  - hypertension
+  - prescription adjustment
+  - emergency dispensation
+  - medical dispensation
+  confidence_threshold: 0.85
+  priority: 3
+  mask_token: '[HEALTH_DATA]'
+  description: Clinical health condition diagnoses, allergies, and prescription notations.
+  mask_strategy: full
+- classifier_id: CLS-PII-USERNAME-001
+  name: System Account Username
+  category: PII.IDENTIFIER.USERNAME
+  type: regex_context
+  pattern: (?i:\b(?:Account Name|Username|User Name|Login|Account):[ \t]*)(?!Role\b)([a-zA-Z][a-zA-Z0-9._-]{2,30})\b
+  confidence: 0.86
+  confidence_threshold: 0.85
+  priority: 3
+  mask_token: '[USERNAME]'
+  description: System account username anchored by tightened label context with negative
+    lookahead guard against Role labels (D-9).
+  mask_strategy: full
+- classifier_id: CLS-PHI-INSURANCE-MEMBER-ID-001
+  name: Health Insurance Member ID / Policy Number
+  category: PHI.MEDICAL_IDENTIFIER.HEALTH_INSURANCE_MEMBER_ID
+  type: regex
+  pattern: \b(?:HI|INS|POL|GRP)-[A-Za-z0-9-]{6,16}\b|(?i:\bHealth Insurance (?:Number|ID|Member
+    ID):[ \t]*)([A-Za-z0-9-]+)\b
+  confidence: 0.9
+  confidence_threshold: 0.85
+  priority: 2
+  mask_token: '[INSURANCE_ID]'
+  description: Health insurance member identifier, policy number, or group ID.
+  mask_strategy: partial
+  partial_mask_description: Preserve plan prefix (e.g. HI-) and suffix code, mask
+    member digits with solid black squares.
+- classifier_id: CLS-UK-SORT-CODE-001
+  name: UK Bank Sort Code
+  category: PII.FINANCIAL.UK_SORT_CODE
+  type: regex
+  pattern: (?i:\b(?:Sort[\s\n_-]*Code|Sort-Code|SC|Sortcode)\b(?:\s+(?:is|was|:|=|#|-))?\s*[:#=]?\s*)([0-9]{2}[-\s]?[0-9]{2}[-\s]?[0-9]{2})\b
+  confidence_threshold: 0.85
+  priority: 2
+  mask_token: '[SORT_CODE]'
+  mask_strategy: partial
+  partial_mask_description: Mask first 4 digits with solid black squares, preserve
+    last 2 digits and hyphens/spaces.
+  description: UK 6-digit bank sort code with conversational and line-wrap tolerance.
+- classifier_id: CLS-EXT-BANK-ACCT-001
+  name: Bank Account Number
+  category: PII.FINANCIAL.BANK_ACCOUNT_NUMBER
+  type: regex
+  pattern: (?i:\b(?:Account[\s\n_-]*(?:Number|No|#)|Acct[\s\n_-]*(?:Number|No|#)|Bank[\s\n_-]*Acct|Direct
+    Deposit Account)\b(?:\s+(?:is|was|:|=|#|-))?\s*[:#=]?\s*)([0-9]{8,17})\b
+  confidence_threshold: 0.85
+  priority: 2
+  mask_token: '[BANK_ACCOUNT]'
+  mask_strategy: partial
+  partial_mask_description: Preserve last 4 digits, mask earlier digits with solid
+    black squares.
+  description: Financial bank account or direct deposit account number with conversational
+    tolerance.
+- classifier_id: CLS-EXT-UK-SPOKEN-DOB-001
+  name: Date of Birth (Spoken & UK Format)
+  category: PII.DEMOGRAPHIC.DATE_OF_BIRTH
+  type: regex
+  pattern: (?i:\b(?:born(?:\s+on)?(?:\s+the)?|DOB|Date of Birth)\s*[:=]?\s*)(?:the\s+)?(\d{1,2}(?:st|nd|rd|th)?\s+(?:of\s+)?(?:January|February|March|April|May|June|July|August|September|October|November|December)[,\s]+\d{4})\b|\b(?i:(?:born(?:\s+on)?|DOB|Date
+    of Birth)\s*[:=]?\s*)(\d{1,2}[/-]\d{1,2}[/-]\d{4})\b
+  confidence_threshold: 0.85
+  priority: 3
+  mask_token: '[DATE_OF_BIRTH]'
+  mask_strategy: full
+  description: UK format and spoken conversational dates of birth (e.g. 14th of July,
+    1974 or 14/07/1974).
+- classifier_id: CLS-UK-POSTCODE-001
+  name: UK Postal Code
+  category: PII.LOCATION.UK_POSTCODE
+  type: regex
+  pattern: \b(?:GIR\s*0AA|[A-PR-UWYZ][A-HK-Y]?\d[A-Z\d]?\s*\d[A-DEFGHJLNPQRSTUWXYZ]{2})\b
+  confidence_threshold: 0.85
+  priority: 3
+  mask_token: '[POSTCODE]'
+  mask_strategy: partial
+  partial_mask_description: Preserve outward area code, mask inward unit with solid
+    black squares.
+  description: UK Royal Mail standard postal code.
+- classifier_id: CLS-UK-PHONE-001
+  name: Telephone Number (UK & +44)
+  category: PII.CONTACT.PHONE_NUMBER
+  type: regex
+  pattern: (?:(?:\+44\s*(?:\(0\)\s*)?|0044\s*)|\b0)(?:1\d{1,4}|2\d|3\d{2}|7\d{3}|8\d{2,3}|9\d{2,3})\s*\d{3,4}\s*\d{3,4}\b
+  confidence_threshold: 0.85
+  priority: 2
+  mask_token: '[PHONE_NUMBER]'
+  mask_strategy: partial
+  partial_mask_description: Preserve +44 country code and punctuation, mask subscriber
+    digits with solid black squares.
+  description: UK landline and mobile telephone numbers with line-wrap tolerance.
+- classifier_id: CLS-UK-NINO-001
+  name: UK National Insurance Number (NINO)
+  category: PII.IDENTIFIER.UK_NINO
+  type: regex
+  pattern: (?i:\b(?:NINO|National Insurance(?:\s*(?:Number|No))?|NI\s*No|NI\s*Number)\s*[:#=]?\s*)([A-Za-z]{2}\s*\d{2}\s*\d{2}\s*\d{2}\s*[A-Da-d]?)\b|\b(?:[A-CEGHJ-PR-TW-Z][A-CEGHJ-NPR-TW-Z]|QQ)\s*\d{2}\s*\d{2}\s*\d{2}\s*[A-D]?\b
+  confidence_threshold: 0.85
+  priority: 2
+  mask_token: '[NINO]'
+  mask_strategy: partial
+  partial_mask_description: Mask first 2 letters and first 4 digits with solid black
+    squares, preserve last 2 digits and suffix letter.
+  description: UK National Insurance Number.
+- classifier_id: CLS-UK-NHS-NUM-001
+  name: UK NHS Number
+  category: PHI.MEDICAL_IDENTIFIER.UK_NHS_NUMBER
+  type: regex
+  pattern: (?i:\b(?:NHS|NHS Number|NHS No|National Health Service No)\s*[:#=]?\s*)(\d{3}[\s-]?\d{3}[\s-]?\d{4})\b|\b\d{3}[\s-]\d{3}[\s-]\d{4}\b
+  confidence_threshold: 0.85
+  priority: 2
+  mask_token: '[NHS_NUMBER]'
+  mask_strategy: partial
+  partial_mask_description: Mask first 6 digits with solid black squares, preserve
+    last 4 digits.
+  description: UK 10-digit National Health Service patient identifier.
+- classifier_id: CLS-EXT-EMPLOYEE-ID-001
+  name: Employee / Agent Identifier
+  category: PII.IDENTIFIER.EMPLOYEE_ID
+  type: regex
+  pattern: (?i:\b(?:Employee|Staff|Worker|Badge|Agent)[- ]*(?:ID|No|Number|#|Code)\s*[:=]\s*)([A-Za-z0-9_-]+)\b|\bAGENT_[A-Za-z0-9_-]+\b|\bEMP-[A-Za-z0-9-]+\b
+  confidence_threshold: 0.85
+  priority: 4
+  mask_token: '[EMPLOYEE_ID]'
+  mask_strategy: full
+  description: Staff, worker badge, or service agent identifier (e.g. AGENT_UK_512).
+- classifier_id: CLS-EXT-AGENT-NAME-001
+  name: Agent / Speaker Name
+  category: PII.PERSON_NAME
+  type: regex
+  pattern: '(?i:\b(?:My name is|I am|I''m|This is)\s+)([A-Z][a-zA-Z]+(?: [A-Z][a-zA-Z]+)?)\b'
+  confidence_threshold: 0.85
+  priority: 4
+  mask_token: '[NAME]'
+  mask_strategy: full
+  description: Representative introduction or conversational speaker name.
+- classifier_id: CLS-EXT-TITLED-NAME-001
+  name: Honorific Titled Surname
+  category: PII.PERSON_NAME
+  type: regex
+  pattern: \b(?:Mr\.?|Mrs\.?|Ms\.?|Miss|Dr\.?|Prof\.?)\s+([A-Z][a-zA-Z]+)\b
+  confidence_threshold: 0.85
+  priority: 4
+  mask_token: '[NAME]'
+  mask_strategy: full
+  description: Honorific title with surname (e.g. Mr. Pendelton).
+- classifier_id: CLS-UK-DRIVING-LICENCE-001
+  name: UK Driving Licence
+  category: PII.IDENTIFIER.UK_DRIVING_LICENCE
+  type: regex
+  pattern: (?i:\b(?:Driving Licen[cs]e|Driver Licen[cs]e|DL)\s*[:#=]?\s*)([A-Z]{5}\s*\d{6}\s*[A-Z]{2}\d[A-Z]{2})\b
+  confidence_threshold: 0.85
+  priority: 3
+  mask_token: '[DRIVING_LICENCE]'
+  mask_strategy: partial
+  partial_mask_description: Mask first 14 characters with solid black squares, preserve
+    last 2 characters.
+  description: UK DVLA 16-character driving licence number.
+- classifier_id: CLS-UK-VEHICLE-PLATE-001
+  name: UK Vehicle Registration Plate
+  category: PII.IDENTIFIER.UK_VEHICLE_PLATE
+  type: regex
+  pattern: (?i:\b(?:Registration|Reg Plate|Vehicle Reg|VRM|Number Plate|Reg No|Reg
+    Number)\s*[:#=]?\s*)([A-Z]{2}\d{2}\s?[A-Z]{3})\b
+  confidence_threshold: 0.85
+  priority: 3
+  mask_token: '[VEHICLE_PLATE]'
+  mask_strategy: partial
+  partial_mask_description: Preserve area/year prefix, mask random suffix with solid
+    black squares.
+  description: UK standard vehicle registration mark / plate.
+- classifier_id: CLS-UK-UTR-001
+  name: UK Unique Taxpayer Reference (UTR)
+  category: PII.IDENTIFIER.UK_UTR
+  type: regex
+  pattern: (?i:\b(?:UTR|Unique Taxpayer Reference|Tax Reference)\s*[:#=]?\s*)(\d{5}\s?\d{5}|\d{10})\b
+  confidence_threshold: 0.85
+  priority: 3
+  mask_token: '[UTR]'
+  mask_strategy: partial
+  partial_mask_description: Mask first 6 digits with solid black squares, preserve
+    last 4 digits.
+  description: UK HMRC 10-digit Unique Taxpayer Reference.
+change_history:
+- revision_id: rev-003
+  ruleset_version: 1.2.0
+  actor: Human Admin
+  actor_id: ADMIN-ROOT-001
+  timestamp: '2026-10-19T15:40:00Z'
+  approval_token: AUTH-TOKEN-ADMIN-REV3-APPROVED-20261019-ROOT
+  action: UPDATE_PINNED_REVISION
+  diff:
+    operation: UPDATE
+    classifiers_added: 13
+    classifiers_removed: 0
+    classifiers_modified: 0
+    added_classifier_ids:
+    - CLS-UK-SORT-CODE-001
+    - CLS-EXT-BANK-ACCT-001
+    - CLS-EXT-UK-SPOKEN-DOB-001
+    - CLS-UK-POSTCODE-001
+    - CLS-UK-PHONE-001
+    - CLS-UK-NINO-001
+    - CLS-UK-NHS-NUM-001
+    - CLS-EXT-EMPLOYEE-ID-001
+    - CLS-EXT-AGENT-NAME-001
+    - CLS-EXT-TITLED-NAME-001
+    - CLS-UK-DRIVING-LICENCE-001
+    - CLS-UK-VEHICLE-PLATE-001
+    - CLS-UK-UTR-001
+  comment: 'Revision 3 (rev-003) officially authorized by ADMIN-ROOT-001: promoted
+    UK identifiers (Sort Code, Account Number, Postcode, NHS Number, NINO, Phone,
+    Driving Licence, Plate, UTR), spoken DOB, and conversational names to authoritative
+    pinned classifiers.'
+pending_admin_review: []
+```

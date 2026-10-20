@@ -1,0 +1,17 @@
+[project]
+name = "auto-redaction"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "neuro-san-studio>=0.3.20",
+    "pymupdf>=2.0",
+]
+
+[project.scripts]
+auto-redaction = "auto_redaction:main"
+
+[build-system]
+requires = ["uv_build>=0.13.0,<0.14.0"]
+build-backend = "uv_build"

@@ -1,0 +1,28 @@
+CUSTOMER SUPPORT CALL TRANSCRIPT
+RECORD ID: REC-2026-09411
+TIMESTAMP: 2026-10-19T14:15:00Z
+AGENT ID: AGENT_8819
+CUSTOMER NAME: ■■■■■■ ■■■■■ ■■■■■■■
+Transcript
+[14:15:05] Agent 8819: Thank you for calling Pinnacle Support. My name is ■■■■. May I have 
+your full name and account number or phone number to get started?
+[14:15:22] ■■■■■■ ■■■■■■■: Hi ■■■■. Yes, my name is ■■■■■■ ■■■■■ ■■■■■■■, and my phone 
+number is ■■■-■■■-■■■■.
+[14:15:45] Agent 8819: Thank you, ■■■ ■■■■■■■. I see your account here. For verification 
+purposes, could you please confirm your date of birth and the last 4 digits of your Social 
+Security Number?
+[14:16:02] ■■■■■■ ■■■■■■■: Sure, my birthday is ■■■■■■■■ ■■■ ■■■■, and my SSN ends in 
+7741.
+[14:16:25] Agent 8819: Perfect, thank you for verifying. I see you're inquiring about the 
+billing discrepancy on your recent statement.
+[14:16:45] ■■■■■■ ■■■■■■■: Exactly. I was charged twice for my monthly subscription on 
+October 10th using my Visa card ending in 4421.
+[14:17:10] Agent 8819: I sincerely apologize for that error, ■■■■■■. I have processed a 
+refund of $49.99 back to your card ending in 4421. You should see it reflected within 3 to 5 
+business days.
+[14:17:40] ■■■■■■ ■■■■■■■: That's great. Can you also send the confirmation receipt to my 
+email at ■■■■■■■■■■■■■■■■@example-mail.net?
+[14:18:00] Agent 8819: Absolutely, I've just dispatched the confirmation to 
+■■■■■■■■■■■■■■■■@example-mail.net. Is there anything else I can assist you with today?
+[14:18:15] ■■■■■■ ■■■■■■■: No, that's everything. Thanks for your quick help!
+[14:18:22] Agent 8819: You're very welcome. Have a wonderful day!

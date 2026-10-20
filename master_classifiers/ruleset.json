@@ -1,0 +1,232 @@
+{
+  "active_revision_id": "rev-001",
+  "ruleset_version": "1.0.0",
+  "status": "PINNED",
+  "metadata": {
+    "title": "Master Data Classifiers Ruleset",
+    "revision": 1,
+    "revision_id": "rev-001",
+    "ruleset_version": "1.0.0",
+    "created_at": "2026-10-16T13:30:00Z",
+    "created_by": "Human Admin",
+    "approval_actor": "ADMIN-ROOT-001",
+    "approval_token": "AUTH-TOKEN-ADMIN-REV1-APPROVED-20261016-ROOT",
+    "approval_timestamp": "2026-10-16T13:30:00Z",
+    "integrity_hash": "sha256-rev1-master-data-classifiers-pinned",
+    "description": "Initial provisioned, immutable pinned Master Data Classifiers revision covering PII and PHI entities with category definitions, regex patterns, NER entity models, and confidence thresholds."
+  },
+  "categories": {
+    "PII": {
+      "description": "Personally Identifiable Information",
+      "subcategories": {
+        "PERSON_NAME": { "description": "Full or partial names of individuals" },
+        "IDENTIFIER": {
+          "description": "Government or official identity numbers",
+          "types": ["SSN", "NATIONAL_ID", "PASSPORT", "DRIVERS_LICENSE"]
+        },
+        "CONTACT": {
+          "description": "Direct communication contact information",
+          "types": ["EMAIL", "PHONE_NUMBER"]
+        },
+        "LOCATION": {
+          "description": "Physical addresses and network locations",
+          "types": ["STREET_ADDRESS", "IP_ADDRESS"]
+        },
+        "FINANCIAL": {
+          "description": "Banking, payment, and transaction identifiers",
+          "types": ["CREDIT_CARD", "BANK_ACCOUNT", "IBAN", "CVV"]
+        },
+        "DEMOGRAPHIC": {
+          "description": "Personal demographic attributes",
+          "types": ["DATE_OF_BIRTH"]
+        }
+      }
+    },
+    "PHI": {
+      "description": "Protected Health Information",
+      "subcategories": {
+        "MEDICAL_IDENTIFIER": {
+          "description": "Patient, member, or clinical record identifiers",
+          "types": ["PATIENT_ID", "MEDICAL_CASE_REF"]
+        },
+        "HEALTH_DATA": {
+          "description": "Medical conditions, diagnoses, allergies, and prescriptions",
+          "types": ["ALLERGY", "CONDITION", "PRESCRIPTION", "CLINICAL_NOTE"]
+        }
+      }
+    }
+  },
+  "classifiers": [
+    {
+      "classifier_id": "CLS-PII-SSN-001",
+      "name": "Social Security Number / National ID",
+      "category": "PII.IDENTIFIER.SSN",
+      "type": "regex",
+      "pattern": "\\b\\d{3}-\\d{2}-\\d{4}\\b",
+      "confidence_threshold": 0.95,
+      "priority": 1,
+      "mask_token": "[SSN]",
+      "description": "Standard 9-digit US Social Security Number in AAA-GG-SSSS format."
+    },
+    {
+      "classifier_id": "CLS-PII-CC-001",
+      "name": "Credit Card Number",
+      "category": "PII.FINANCIAL.CREDIT_CARD",
+      "type": "regex",
+      "pattern": "\\b(?:4\\d{3}|5[1-5]\\d{2}|6011|3[47]\\d{2})[- ]?\\d{4}[- ]?\\d{4}[- ]?\\d{4}\\b|\\b\\d{4}-\\d{4}-\\d{4}-\\d{4}\\b",
+      "confidence_threshold": 0.95,
+      "priority": 1,
+      "mask_token": "[CREDIT_CARD]",
+      "description": "Major credit card numbers (Visa, Mastercard, Amex, Discover)."
+    },
+    {
+      "classifier_id": "CLS-PII-EMAIL-001",
+      "name": "Email Address",
+      "category": "PII.CONTACT.EMAIL",
+      "type": "regex",
+      "pattern": "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\\b",
+      "confidence_threshold": 0.95,
+      "priority": 2,
+      "mask_token": "[EMAIL]",
+      "description": "Standard RFC-compliant email address format."
+    },
+    {
+      "classifier_id": "CLS-PII-PHONE-001",
+      "name": "Telephone Number",
+      "category": "PII.CONTACT.PHONE_NUMBER",
+      "type": "regex",
+      "pattern": "(?:\\+?1[-. ]?)?(?:\\(\\d{3}\\)|\\b\\d{3})[-. ]?\\d{3}[-. ]?\\d{4}\\b",
+      "confidence_threshold": 0.90,
+      "priority": 2,
+      "mask_token": "[PHONE_NUMBER]",
+      "description": "North American phone numbers with optional country code, parentheses, dashes, or dots."
+    },
+    {
+      "classifier_id": "CLS-PII-IP-001",
+      "name": "IP Address (IPv4 & IPv6)",
+      "category": "PII.LOCATION.IP_ADDRESS",
+      "type": "regex",
+      "pattern": "\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b|\\b(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\\b",
+      "confidence_threshold": 0.90,
+      "priority": 3,
+      "mask_token": "[IP_ADDRESS]",
+      "description": "IPv4 dotted-decimal and IPv6 8-group addresses."
+    },
+    {
+      "classifier_id": "CLS-PII-DOB-001",
+      "name": "Date of Birth",
+      "category": "PII.DEMOGRAPHIC.DATE_OF_BIRTH",
+      "type": "regex",
+      "pattern": "\\b(?:19|20)\\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\\d|3[01])\\b|\\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\\s+(?:0?[1-9]|[12]\\d|3[01]),\\s+(?:19|20)\\d{2}\\b",
+      "confidence_threshold": 0.85,
+      "priority": 3,
+      "mask_token": "[DATE_OF_BIRTH]",
+      "description": "ISO-8601 dates and month-name formatted dates of birth."
+    },
+    {
+      "classifier_id": "CLS-PII-IBAN-001",
+      "name": "Bank Account (IBAN)",
+      "category": "PII.FINANCIAL.BANK_ACCOUNT",
+      "type": "regex",
+      "pattern": "\\b[A-Z]{2}\\d{2}(?:\\s?[A-Z0-9]{4}){3,7}\\b",
+      "confidence_threshold": 0.90,
+      "priority": 2,
+      "mask_token": "[BANK_ACCOUNT]",
+      "description": "International Bank Account Numbers with optional spacing."
+    },
+    {
+      "classifier_id": "CLS-PII-PASSPORT-001",
+      "name": "Passport Number",
+      "category": "PII.IDENTIFIER.PASSPORT",
+      "type": "regex",
+      "pattern": "\\b[A-Z]\\d{8,9}\\b",
+      "confidence_threshold": 0.85,
+      "priority": 3,
+      "mask_token": "[PASSPORT]",
+      "description": "Standard alphanumeric passport identifiers."
+    },
+    {
+      "classifier_id": "CLS-PII-DL-001",
+      "name": "Driver's License",
+      "category": "PII.IDENTIFIER.DRIVERS_LICENSE",
+      "type": "regex",
+      "pattern": "\\bDL-[A-Z0-9]{6,12}(?:-[A-Z]{2})?\\b",
+      "confidence_threshold": 0.85,
+      "priority": 3,
+      "mask_token": "[DRIVERS_LICENSE]",
+      "description": "Standard state driver's license numbers with DL- prefix."
+    },
+    {
+      "classifier_id": "CLS-PII-ADDRESS-001",
+      "name": "Residential / Work Street Address",
+      "category": "PII.LOCATION.STREET_ADDRESS",
+      "type": "regex",
+      "pattern": "\\b\\d{1,5}\\s+[A-Za-z0-9\\s.,]+(?:Terrace|Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Way|Lane|Ln|Drive|Dr)(?:[A-Za-z0-9\\s.,#]+)?(?:,\\s+[A-Za-z\\s]+,\\s+[A-Z]{2}\\s+\\d{5}(?:-\\d{4})?)?\\b",
+      "confidence_threshold": 0.85,
+      "priority": 4,
+      "mask_token": "[STREET_ADDRESS]",
+      "description": "Physical postal street address including street name, city, state, zip."
+    },
+    {
+      "classifier_id": "CLS-PII-NAME-001",
+      "name": "Full Name / Individual Name",
+      "category": "PII.PERSON_NAME",
+      "type": "ner",
+      "entity_types": ["PERSON"],
+      "confidence_threshold": 0.80,
+      "priority": 5,
+      "mask_token": "[NAME]",
+      "description": "Named entity person recognizer for personal and professional names."
+    },
+    {
+      "classifier_id": "CLS-PHI-MED-ID-001",
+      "name": "Medical Case Ref / Patient Member ID",
+      "category": "PHI.MEDICAL_IDENTIFIER",
+      "type": "regex",
+      "pattern": "\\b(?:MC|MEM|PAT|REC)-[A-Za-z0-9-]{4,15}\\b",
+      "confidence_threshold": 0.90,
+      "priority": 2,
+      "mask_token": "[MEDICAL_ID]",
+      "description": "Identifiers for medical case references, patient IDs, member IDs."
+    },
+    {
+      "classifier_id": "CLS-PHI-CONDITION-001",
+      "name": "Health Condition / Prescription / Allergy",
+      "category": "PHI.HEALTH_DATA",
+      "type": "dictionary_and_heuristic",
+      "terms": [
+        "penicillin allergy",
+        "allergy",
+        "Hypertension",
+        "hypertension",
+        "prescription adjustment",
+        "emergency dispensation",
+        "medical dispensation"
+      ],
+      "confidence_threshold": 0.85,
+      "priority": 3,
+      "mask_token": "[HEALTH_DATA]",
+      "description": "Clinical health condition diagnoses, allergies, and prescription notations."
+    }
+  ],
+  "history": [
+    {
+      "revision_id": "rev-001",
+      "ruleset_version": "1.0.0",
+      "actor": "Human Admin",
+      "actor_id": "ADMIN-ROOT-001",
+      "timestamp": "2026-10-16T13:30:00Z",
+      "approval_token": "AUTH-TOKEN-ADMIN-REV1-APPROVED-20261016-ROOT",
+      "action": "CREATE_INITIAL_PINNED_REVISION",
+      "diff": {
+        "operation": "INIT",
+        "classifiers_added": 13,
+        "classifiers_removed": 0,
+        "classifiers_modified": 0
+      },
+      "comment": "Initial authoritative baseline provisioned and approved by Human Admin."
+    }
+  ],
+  "pending_admin_review": []
+}
+

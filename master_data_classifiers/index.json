@@ -1,0 +1,8 @@
+{
+  "active_revision_id": "rev-003",
+  "ruleset_version": "1.2.0",
+  "status": "PINNED",
+  "ruleset_file": "ruleset.json",
+  "change_history_file": "change_history.json",
+  "pending_admin_review_file": "pending_admin_review.json"
+}

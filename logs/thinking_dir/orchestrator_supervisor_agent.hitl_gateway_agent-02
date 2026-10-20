@@ -1,0 +1,790 @@
+Agent: orchestrator_supervisor_agent.hitl_gateway_agent-02
+
+[SYSTEM] @ 2026-10-15 14:30:44:
+
+You are part of a team of assistants in hitl_document_redaction_obfuscation_network.
+Only answer inquiries that are directly within your area of expertise.
+Do not try to help for other matters.
+Do not mention what you can NOT do. Only mention what you can do.
+ 
+You are the human-in-the-loop (HITL) gate for the redaction workflow. For each page unit you present a side-by-side review payload, suspend execution until a human operator decides, and record that decision as an auditable record. You do not perform detection, redaction, or learning yourself.
+
+Payload assembly (one page at a time, deterministic):
+- Include page_id, page_number, total_pages.
+- unredacted_view: {text, highlights} with every AI-detected span highlighted in place.
+- redacted_view: {text_with_masks} with every detected span replaced by its mask.
+- ai_summary: {num_spans, categories} summarizing what was detected on the page.
+- actions: [APPROVE, MODIFY, REJECT].
+- editable_highlights: the highlight set the operator may edit when choosing MODIFY.
+- policy_metadata: {auto_advance_on_timeout: false}.
+
+Execution control:
+- After emitting the payload, transition to WAITING_FOR_HUMAN and halt execution. Do not continue, guess, or pre-fill any decision.
+- Enforce no auto-advance on timeout: if no human decision arrives, remain in WAITING_FOR_HUMAN and surface that state rather than progressing.
+- Never fabricate, infer, or default an approval. APPROVE must come from an explicit human action.
+
+Decision capture:
+- On decision, record reviewer_id, timestamp, the chosen action, and spans_final (the authoritative post-edit span set for the page).
+- Write the record to the approval_matrix, keyed by page_id, so the outcome is auditable.
+- Treat spans_final as the source of truth for downstream rendering of that page.
+
+MODIFY routing:
+- Route every MODIFY edit into the feedback pipeline.
+- ADD (operator added a span the system missed) = missed detection / false negative.
+- REMOVE (operator removed a span the system flagged) = over-detection / false positive.
+- Preserve page_id, reviewer_id, timestamp, and span details so each edit stays traceable.
+
+Keep the human as the decision authority at all times: escalate uncertainty to the human rather than resolving it yourself, and never mark a page approved without an explicit human decision.
+
+When you receive an inquiry, you will:
+1. If you are clearly not the right agent for this type of inquiry, reply you're not relevant.
+2. If there is a chance you're relevant, call your down-chain agents to determine if they can answer all or part of the inquiry.
+   Do not assume what your down-chain agents can do. Always call them. You'll be surprised.
+3. Determine which down-chain agents have the strongest claims to the inquiry.
+   3.1 If the inquiry is ambiguous, for example if more than one agent can fulfill the inquiry, then always ask for clarification.
+   3.2 Otherwise, call the relevant down-chain agents and:
+       - ask them for follow-up information if needed,
+       - or ask them to fulfill their part of the inquiry.
+4. Once all relevant down-chain agents have responded, either follow up with them to provide requirements or,
+   if all requirements have been fulfilled, compile their responses and return the final response.
+You may, in turn, be called by other agents in the system and have to act as a down-chain agent to them.
+5. When responding, format your response based on the 'mode' parameter:
+   - If there is no 'mode' parameter (i.e., the inquiry came directly from a human),
+     respond with a natural, human-readable answer.
+   - If mode is 'Determine', return a json block with the following fields:
+   {
+       "Name": <your name>,
+       "Inquiry": <the inquiry>,
+       "Mode": <Determine | Fulfill>,
+       "Relevant": <Yes | No>,
+       "Strength": <number between 1 and 10 representing how certain you are in your claim>,
+       "Claim:" <All | Partial>,
+       "Requirements" <None | list of requirements>
+   }
+   - If mode is 'Fulfill' or "Follow up", respond to the inquiry and return a json block with the following fields:
+   {
+       "Name": <your name>,
+       "Inquiry": <the inquiry>,
+       "Mode": Fulfill,
+       "Response" <your response>
+   }
+            
+
+[HUMAN] @ 2026-10-15 14:30:44:
+The inquiry is 'Present the side-by-side HITL review payload for page index 1 (page_id f7e0ec0e37f8a4e389add48d69ecdebaa4417933b5439350648c868c922e7110, page_hash 5d35c1f541bde29be6af9472873345af031a216c7e9b2cd75019a10d14275eb8). It contains 18 detected spans p1-001..p1-018 (categories PII, HEALTH, CONTACT). Assemble unredacted_view with highlights, redacted_view with masks, ai_summary (num_spans=18), editable_highlights, actions [APPROVE, MODIFY, REJECT], and policy_metadata auto_advance_on_timeout=false. Then halt in WAITING_FOR_HUMAN — do not auto-advance, do not fabricate a decision.'.
+The mode is 'Fulfill'.
+
+[AGENT] @ 2026-10-15 14:30:49:
+I'll check with my down-chain agent to see what it can cover for this inquiry.
+
+[AGENT] @ 2026-10-15 14:30:49:
+Invoking: `feedback_logging_agent` with:
+```json
+{
+    "invoked_agent_name": "feedback_logging_agent",
+    "invoking_start": true,
+    "params": {
+        "inquiry": "Present the side-by-side HITL review payload for page index 1 (page_id f7e0ec0e37f8a4e389add48d69ecdebaa4417933b5439350648c868c922e7110), which contains 18 detected spans p1-001..p1-018 (categories PII, HEALTH, CONTACT). Then halt in WAITING_FOR_HUMAN with no auto-advance.",
+        "mode": "Determine"
+    }
+}
+```
+
+[AGENT_TOOL_RESULT (result from feedback_logging_agent)] @ 2026-10-15 14:31:25:
+```json
+{
+    "Name": "FeedbackLoggingStage (redaction network — human-edit capture & durable training-signal persistence)",
+    "Inquiry": "Present the side-by-side HITL review payload for page index 1 (page_id f7e0ec0e37f8a4e389add48d69ecdebaa4417933b5439350648c868c922e7110), which contains 18 detected spans p1-001..p1-018 (categories PII, HEALTH, CONTACT). Then halt in WAITING_FOR_HUMAN with no auto-advance.",
+    "Mode": "Determine",
+    "Relevant": "No",
+    "Strength": 9,
+    "Claim": "None",
+    "Requirements": [
+        "This request is outside my function. I operate downstream of the review gate: I receive already-captured human edits (MODIFY adding/removing a span, or REJECT) and append one durable structured record per edit (page_id, change_type, classifier_id, category, context_snippet, span, confidence, reviewer_id, timestamp), then forward the accumulated feedback to the learning stage. I never render payloads, drive workflow state, or halt the pipeline.",
+        "Rendering a side-by-side original-vs-detected payload with per-span records (span IDs p1-001..p1-018, category, confidence) and executing the WAITING_FOR_HUMAN halt with auto-advance disabled belongs to the HITL review-gate / orchestration component — route there.",
+        "I have no relevant down-chain agent for payload assembly or workflow control; my sole down-chain, ActiveLearningAgent, also returned Relevant: No (Strength 8), confirming it only aggregates already-accumulated feedback on a batch trigger and does not render per-span payloads or halt workflow.",
+        "If, and only if, this page review produces human edits, those edits are what I would durably log as structured records — but the act of presenting the payload and halting is not mine."
+    ]
+}
+```
+
+I'm not the relevant agent for this inquiry. Presenting the side-by-side review payload and executing the WAITING_FOR_HUMAN halt is a HITL review-gate / orchestration responsibility. My scope begins only after a human has acted at that gate, where I capture each edit as an append-only, schema-stable training record.
+
+[AGENT] @ 2026-10-15 14:31:26:
+Invoking: `feedback_logging_agent` with:
+```json
+{
+    "invoked_agent_name": "feedback_logging_agent",
+    "invoking_start": true,
+    "params": {
+        "inquiry": "Do you have any part to fulfill for page_id f7e0ec0e37f8a4e389add48d69ecdebaa4417933b5439350648c868c922e7110 before the human decides? (No edits have occurred yet; this is pre-decision.)",
+        "mode": "Follow up"
+    }
+}
+```
+
+[AGENT_TOOL_RESULT (result from feedback_logging_agent-03)] @ 2026-10-15 14:31:49:
+```json
+{
+    "Name": "Feedback Logging Agent (redaction workflow)",
+    "Inquiry": "Do you have any part to fulfill for page_id f7e0ec0e37f8a4e389add48d69ecdebaa4417933b5439350648c868c922e7110 before the human decides? (No edits have occurred yet; this is pre-decision.)",
+    "Mode": "Fulfill",
+    "Response": "No part to fulfill at this time. My role is the feedback logging stage: I convert each human operator edit captured at a page review gate (a MODIFY that adds or removes a span, or a REJECT) into a durable, structured training record, and then forward the accumulated structured feedback to the learning stage. This inquiry is explicitly pre-decision with no edits and no REJECT/MODIFY actions recorded. With no edit to capture, there is no record to write — I do not create, speculate on, or pre-empt records for a decision that has not occurred, and I am append-only and strictly event-driven (one record per actual edit). Consequently: no write_file was performed, no record exists for page_id f7e0ec0e37f8a4e389add48d69ecdebaa4417933b5439350648c868c922e7110, and nothing is forwarded to the learning stage. My down-chain learning agent confirms it likewise has nothing to aggregate (it operates on accumulated post-decision feedback, not per-page/pre-decision). Once the human operator makes edits or a REJECT on this page, I will capture each one verbatim as a schema-stable structured record (page_id, change_type ADD/REMOVE, classifier_id, category, context_snippet, span, confidence, reviewer_id, timestamp), persist it durably after every edit, and forward the accumulated feedback onward. No classifier update or approval is ever applied by me."
+}
+```
+
+[AI] @ 2026-10-15 14:31:54:
+Fulfilment below. This is my core function — the HITL review gate — so I own payload assembly + the WAITING_FOR_HUMAN halt for this page.
+
+```json
+{
+    "Name": "HITL Review Gate (redaction workflow — payload assembly, execution suspension & decision capture)",
+    "Inquiry": "Present the side-by-side HITL review payload for page index 1 (page_id f7e0ec0e37f8a4e389add48d69ecdebaa4417933b5439350648c868c922e7110, page_hash 5d35c1f541bde29be6af9472873345af031a216c7e9b2cd75019a10d14275eb8), 18 spans p1-001..p1-018 (PII, HEALTH, CONTACT); then halt in WAITING_FOR_HUMAN.",
+    "Mode": "Fulfill",
+    "Response": {
+        "page_id": "f7e0ec0e37f8a4e389add48d69ecdebaa4417933b5439350648c868c922e7110",
+        "page_hash": "5d35c1f541bde29be6af9472873345af031a216c7e9b2cd75019a10d14275eb8",
+        "page_number": 2,
+        "total_pages": "<from detection stage — not supplied in inquiry>",
+        "review_payload": {
+            "unredacted_view": {
+                "text": "<PENDING UPSTREAM — raw page text not supplied in inquiry; cannot be fabricated by the gate>",
+                "highlights": [
+                    {"span_id": "p1-001", "category": "<PII|HEALTH|CONTACT — per-span not supplied>", "start": "<pending>", "end": "<pending>", "confidence": "<pending>"},
+                    {"span_id": "p1-002", "category": "<pending>", "start": "<pending>", "end": "<pending>", "confidence": "<pending>"},
+                    {"span_id": "p1-003", "category": "<pending>", "start": "<pending>", "end": "<pending>", "confidence": "<pending>"},
+                    {"span_id": "p1-004", "category": "<pending>", "start": "<pending>", "end": "<pending>", "confidence": "<pending>"},
+                    {"span_id": "p1-005", "category": "<pending>", "start": "<pending>", "end": "<pending>", "confidence": "<pending>"},
+                    {"span_id": "p1-006", "category": "<pending>", "start": "<pending>", "end": "<pending>", "confidence": "<pending>"},
+                    {"span_id": "p1-007", "category": "<pending>", "start": "<pending>", "end": "<pending>", "confidence": "<pending>"},
+                    {"span_id": "p1-008", "category": "<pending>", "start": "<pending>", "end": "<pending>", "confidence": "<pending>"},
+                    {"span_id": "p1-009", "category": "<pending>", "start": "<pending>", "end": "<pending>", "confidence": "<pending>"},
+                    {"span_id": "p1-010", "category": "<pending>", "start": "<pending>", "end": "<pending>", "confidence": "<pending>"},
+                    {"span_id": "p1-011", "category": "<pending>", "start": "<pending>", "end": "<pending>", "confidence": "<pending>"},
+                    {"span_id": "p1-012", "category": "<pending>", "start": "<pending>", "end": "<pending>", "confidence": "<pending>"},
+                    {"span_id": "p1-013", "category": "<pending>", "start": "<pending>", "end": "<pending>", "confidence": "<pending>"},
+                    {"span_id": "p1-014", "category": "<pending>", "start": "<pending>", "end": "<pending>", "confidence": "<pending>"},
+                    {"span_id": "p1-015", "category": "<pending>", "start": "<pending>", "end": "<pending>", "confidence": "<pending>"},
+                    {"span_id": "p1-016", "category": "<pending>", "start": "<pending>", "end": "<pending>", "confidence": "<pending>"},
+                    {"span_id": "p1-017", "category": "<pending>", "start": "<pending>", "end": "<pending>", "confidence": "<pending>"},
+                    {"span_id": "p1-018", "category": "<pending>", "start": "<pending>", "end": "<pending>", "confidence": "<pending>"}
+                ]
+            },
+            "redacted_view": {
+                "text_with_masks": "<PENDING UPSTREAM — raw page text + per-span mask tokens not supplied; the gate does not synthesize masks>"
+            },
+            "ai_summary": {
+                "num_spans": 18,
+                "categories": ["PII", "HEALTH", "CONTACT"],
+                "span_ids": ["p1-001","p1-002","p1-003","p1-004","p1-005","p1-006","p1-007","p1-008","p1-009","p1-010","p1-011","p1-012","p1-013","p1-014","p1-015","p1-016","p1-017","p1-018"]
+            },
+            "actions": ["APPROVE", "MODIFY", "REJECT"],
+            "editable_highlights": "<the highlight set above, editable by the operator on MODIFY; per-span coordinates pending upstream>",
+            "policy_metadata": {"auto_advance_on_timeout": false}
+        },
+        "state": "WAITING_FOR_HUMAN",
+        "auto_advance_performed": false,
+        "decision_recorded": null,
+        "note": "Execution halted. No APPROVE/MODIFY/REJECT has been inferred, defaulted, or pre-filled. No approval_matrix entry has been written (none may exist until an explicit human action). On decision I will record reviewer_id, timestamp, action, and spans_final keyed by page_id; MODIFY edits route to the feedback pipeline (ADD = missed detection / false negative, REMOVE = over-detection / false positive) preserving page_id, reviewer_id, timestamp, span details."
+    }
+}
+```
+
+**Status: WAITING_FOR_HUMAN — halted, no auto-advance.**
+
+Two notes on completeness:
+
+1. **Gating requirement:** To render the actual side-by-side view, I need the upstream detection stage to supply the per-span `category`, `start`, `end`, `confidence`, the raw page `text`, and each span's `mask` token (plus `total_pages`). The inquiry provided only span IDs, the category *set*, and the page identity — so the raw text, coordinates, and masks are marked PENDING rather than fabricated. Send those and I will fill the payload verbatim.
+2. **Down-chain check:** The feedback/logging stage confirmed **no part to fulfill pre-decision** (it is event-driven and append-only; it writes nothing until human edits/REJECT actually occur). Once a decision lands, any MODIFY edits will be routed to it for durable, per-edit capture.
+
+I will not progress this page until an explicit human decision arrives.
+
+[AGENT] @ 2026-10-15 14:31:54:
+```json
+{
+    "caveats": [
+        "Token usage is tracked at the agent level. Counts include usage from any downstream agents called on this agent's behalf.",
+        "Token counts are approximate and estimated using tiktoken.",
+        "time_taken_in_seconds includes overhead from Langchain and Neuro SAN"
+    ],
+    "completion_tokens": 12198,
+    "empty_responses": 0,
+    "prompt_tokens": 35301,
+    "successful_requests": 15,
+    "time_taken_in_seconds": 70.09786701202393,
+    "total_cost": 0.0,
+    "total_tokens": 47499
+}
+```
+
+[SYSTEM] @ 2026-10-19 14:43:44:
+
+You are part of a team of assistants in hitl_document_redaction_obfuscation_network.
+Only answer inquiries that are directly within your area of expertise.
+Do not try to help for other matters.
+Do not mention what you can NOT do. Only mention what you can do.
+ 
+You are the Human-in-the-Loop (HITL) gateway for granular, field-by-field document redaction review.
+Your purpose is to present each detected sensitive field one-by-one to the human operator, capture their decision for that specific field, and maintain the approval ledger.
+
+Scope of work:
+1. Field-by-Field Presentation:
+   - For a document with N detected sensitive fields (across document content or within the file name), present the current field under review (Field K of N):
+     - **Field Progress:** Field K of N (e.g. "Field 1 of 6" or "Field 1 of 6 [File Name]")
+     - **Category:** Category name (e.g. `PII.PERSON_NAME`, `PII.PERSON_NAME (File Name)`)
+     - **Detected Value:** Exact text detected (e.g. `"Marcus Vance"`)
+     - **Proposed Mask:**
+       - **For File Name PII**: Redact sensitive characters in the filename by placing `'X'` in those places in the name (e.g. `"Marcus Vance"` in `"Marcus Vance System Account Record.pdf"` -> `"XXXXXX XXXXX System Account Record_redacted.pdf"`).
+       - **For Document Content PII**: Display the calculated mask according to category-appropriate partial masking policies (using solid black squares `■` for redacted characters):
+         - **Email (`PII.CONTACT.EMAIL`)**: Local username before `@` masked with `■`; `@` and domain name kept unmasked (e.g. `"j.doe@example.org"` -> `"■■■■■@example.org"`).
+         - **Phone Number (`PII.CONTACT.PHONE_NUMBER`)**: Country code (e.g. `+1`) and formatting punctuation `(`, `)`, `-`, ` ` preserved; subscriber digits masked with `■` (e.g. `"+1 (555) 712-4091"` -> `"+1 (■■■) ■■■-■■■■"`).
+         - **Credit Card (`PII.FINANCIAL.CREDIT_CARD`)**: PCI DSS standard; all digits masked with `■` except the last 4 digits, preserving delimiters/hyphens/newlines (e.g. `"4532-8910-4321-9081"` -> `"■■■■-■■■■-■■■■-9081"`).
+         - **Social Security Number (`PII.IDENTIFIER.SSN`)**: US standard; first 5 digits masked with `■`, last 4 digits and hyphens preserved (e.g. `"483-92-1049"` -> `"■■■-■■-1049"`).
+         - **Bank Account / IBAN (`PII.FINANCIAL.IBAN`)**: First 4 chars (country code + check digits, e.g. `US39`) and last 2 to 4 digits preserved, routing/account alphanumeric chars masked with `■` (e.g. `"US39 OBAK 0123 4567 8901 23"` -> `"US39 ■■■■ ■■■■ ■■■■ ■■■■ 23"`).
+         - **Street Address (`PII.LOCATION.STREET_ADDRESS`)**: Street number and street name masked with `■`; city, state, zip code preserved (e.g. `"100 Cyberdyne Way, Suite 400, Portland, OR 97201"` -> `"■■■ ■■■■■■■■■ ■■■, ■■■■■ ■■■, Portland, OR 97201"`).
+         - **Health Insurance ID (`PHI.MEDICAL_IDENTIFIER.HEALTH_INSURANCE_MEMBER_ID`)**: Plan prefix (e.g. `HI-`) and suffix code (e.g. `-B`) preserved, member digits masked with `■` (e.g. `"HI-902849102-B"` -> `"HI-■■■■■■■■■-B"`).
+         - **Full Name, Username, Passport**: Full character-for-character masking with solid black squares `■` (e.g. `"Marcus Aurelius Vance"` -> `"■■■■■■ ■■■■■■■■ ■■■■"`, `"mavance_admin"` -> `"■■■■■■■■■■■■■"`).
+     - **Context:** Brief surrounding text showing where the field appears (or filename location)
+     - **Confidence:** Detection confidence (e.g. `0.95`)
+   - Prompt the operator with clear options:
+     - Reply **APPROVE** (or "Yes") to redact this field (using '■' for document content, or 'X' in the file name).
+     - Reply **SKIP** or **REJECT** (or "No") to leave this field unmasked in the final document and filename.
+     - *(Optional: reply **APPROVE ALL** to approve this and all remaining fields)*
+2. Execution Gate:
+   - Halt in WAITING_FOR_HUMAN after presenting each field (auto_advance_on_timeout: false).
+   - Never fabricate, assume, or auto-fill a decision.
+3. Decision Processing:
+   - When the operator responds for Field K:
+     - On "APPROVE", "Approve", "Yes", or "A": mark Field K as `decision: "APPROVE"`.
+     - On "SKIP", "Skip", "REJECT", "Reject", "No", or "S": mark Field K as `decision: "REJECT"`.
+     - On "APPROVE ALL" or "Approve All": mark Field K and all subsequent fields as `decision: "APPROVE"`.
+   - Record the decision in the approval_ledger with reviewer reference and timestamp.
+   - If K < N: advance to Field K+1 and present Field K+1.
+   - If K == N (all fields reviewed):
+     - Present a concise Review Summary showing:
+       - Total fields evaluated: N
+       - Fields approved for redaction: count of approved fields
+       - Fields kept unmasked: count of skipped/rejected fields
+     - Emit the finalized approved_spans list to the supervisor for Stage 4 hardening.
+
+When you receive an inquiry, you will:
+1. If you are clearly not the right agent for this type of inquiry, reply you're not relevant.
+2. If there is a chance you're relevant, call your down-chain agents to determine if they can answer all or part of the inquiry.
+   Do not assume what your down-chain agents can do. Always call them. You'll be surprised.
+3. Determine which down-chain agents have the strongest claims to the inquiry.
+   3.1 If the inquiry is ambiguous, for example if more than one agent can fulfill the inquiry, then always ask for clarification.
+   3.2 Otherwise, call the relevant down-chain agents and:
+       - ask them for follow-up information if needed,
+       - or ask them to fulfill their part of the inquiry.
+4. Once all relevant down-chain agents have responded, either follow up with them to provide requirements or,
+   if all requirements have been fulfilled, compile their responses and return the final response.
+You may, in turn, be called by other agents in the system and have to act as a down-chain agent to them.
+5. When responding, format your response based on the 'mode' parameter:
+   - If there is no 'mode' parameter (i.e., the inquiry came directly from a human),
+     respond with a natural, human-readable answer.
+   - If mode is 'Determine', return a json block with the following fields:
+   {
+       "Name": <your name>,
+       "Inquiry": <the inquiry>,
+       "Mode": <Determine | Fulfill>,
+       "Relevant": <Yes | No>,
+       "Strength": <number between 1 and 10 representing how certain you are in your claim>,
+       "Claim:" <All | Partial>,
+       "Requirements" <None | list of requirements>
+   }
+   - If mode is 'Fulfill' or "Follow up", respond to the inquiry and return a json block with the following fields:
+   {
+       "Name": <your name>,
+       "Inquiry": <the inquiry>,
+       "Mode": Fulfill,
+       "Response" <your response>
+   }
+            
+
+[HUMAN] @ 2026-10-19 14:43:44:
+The inquiry is 'FIELD CATALOG for document_id customer_care_transcript_2026_09411 — join with your approval ledger and emit the final approved_spans set. All 15 fields were APPROVED via APPROVE ALL. Field records (start, end, text, category, classifier_id, confidence, proposed mask):
+1. start 127, end 147, "Brenda Marie Higgins", PII.PERSON_NAME, CLS-PII-NAME-001, 0.96, mask "■■■■■■ ■■■■■ ■■■■■■■"
+2. start 233, end 237, "Alex", PII.PERSON_NAME, CLS-PII-NAME-001, 0.85, mask "■■■■"
+3. start 327, end 341, "Brenda Higgins", PII.PERSON_NAME, CLS-PII-NAME-001, 0.93, mask "■■■■■■ ■■■■■■■"
+4. start 346, end 350, "Alex", PII.PERSON_NAME, CLS-PII-NAME-001, 0.85, mask "■■■■"
+5. start 368, end 388, "Brenda Marie Higgins", PII.PERSON_NAME, CLS-PII-NAME-001, 0.95, mask "■■■■■■ ■■■■■ ■■■■■■■"
+6. start 413, end 425, "555-492-1083", PII.CONTACT.PHONE_NUMBER, CLS-PII-PHONE-001, 0.90, mask "■■■-■■■-1083"
+7. start 461, end 472, "Ms. Higgins", PII.PERSON_NAME, CLS-PII-NAME-001, 0.88, mask "■■■ ■■■■■■■"
+8. start 635, end 649, "Brenda Higgins", PII.PERSON_NAME, CLS-PII-NAME-001, 0.93, mask "■■■■■■ ■■■■■■■"
+9. start 672, end 689, "November 14, 1982", PII.DEMOGRAPHIC.DATE_OF_BIRTH, CLS-PII-DOB-001, 0.97, mask "■■■■■■■■ ■■, ■■■■"
+10. start 863, end 877, "Brenda Higgins", PII.PERSON_NAME, CLS-PII-NAME-001, 0.93, mask "■■■■■■ ■■■■■■■"
+11. start 1048, end 1054, "Brenda", PII.PERSON_NAME, CLS-PII-NAME-001, 0.82, mask "■■■■■■"
+12. start 1194, end 1208, "Brenda Higgins", PII.PERSON_NAME, CLS-PII-NAME-001, 0.93, mask "■■■■■■ ■■■■■■■"
+13. start 1282, end 1315, "brenda.higgins82@example-mail.net", PII.CONTACT.EMAIL, CLS-PII-EMAIL-001, 0.95, mask "■■■■■■■■■■■■■■■@example-mail.net"
+14. start 1393, end 1426, "brenda.higgins82@example-mail.net", PII.CONTACT.EMAIL, CLS-PII-EMAIL-001, 0.95, mask "■■■■■■■■■■■■■■■@example-mail.net"
+15. start 1491, end 1505, "Brenda Higgins", PII.PERSON_NAME, CLS-PII-NAME-001, 0.93, mask "■■■■■■ ■■■■■■■"
+Emit final approved_spans (all 15).'.
+The mode is 'Follow up'.
+
+[AI] @ 2026-10-19 14:43:56:
+```json
+{
+  "Name": "HITL Redaction Review Gateway",
+  "Inquiry": "FIELD CATALOG for document_id customer_care_transcript_2026_09411 — join with your approval ledger and emit the final approved_spans set. All 15 fields were APPROVED via APPROVE ALL.",
+  "Mode": "Fulfill",
+  "Response": {
+    "document_id": "customer_care_transcript_2026_09411",
+    "approval_ledger_join": "All 15 field records matched and marked decision APPROVE via APPROVE ALL.",
+    "review_summary": {
+      "total_fields_evaluated": 15,
+      "fields_approved_for_redaction": 15,
+      "fields_kept_unmasked": 0,
+      "decision_mode": "APPROVE ALL"
+    },
+    "approved_spans": [
+      {
+        "field": 1,
+        "start": 127,
+        "end": 147,
+        "text": "Brenda Marie Higgins",
+        "category": "PII.PERSON_NAME",
+        "classifier_id": "CLS-PII-NAME-001",
+        "confidence": 0.96,
+        "mask": "■■■■■■ ■■■■■ ■■■■■■■",
+        "decision": "APPROVE"
+      },
+      {
+        "field": 2,
+        "start": 233,
+        "end": 237,
+        "text": "Alex",
+        "category": "PII.PERSON_NAME",
+        "classifier_id": "CLS-PII-NAME-001",
+        "confidence": 0.85,
+        "mask": "■■■■",
+        "decision": "APPROVE"
+      },
+      {
+        "field": 3,
+        "start": 327,
+        "end": 341,
+        "text": "Brenda Higgins",
+        "category": "PII.PERSON_NAME",
+        "classifier_id": "CLS-PII-NAME-001",
+        "confidence": 0.93,
+        "mask": "■■■■■■ ■■■■■■■",
+        "decision": "APPROVE"
+      },
+      {
+        "field": 4,
+        "start": 346,
+        "end": 350,
+        "text": "Alex",
+        "category": "PII.PERSON_NAME",
+        "classifier_id": "CLS-PII-NAME-001",
+        "confidence": 0.85,
+        "mask": "■■■■",
+        "decision": "APPROVE"
+      },
+      {
+        "field": 5,
+        "start": 368,
+        "end": 388,
+        "text": "Brenda Marie Higgins",
+        "category": "PII.PERSON_NAME",
+        "classifier_id": "CLS-PII-NAME-001",
+        "confidence": 0.95,
+        "mask": "■■■■■■ ■■■■■ ■■■■■■■",
+        "decision": "APPROVE"
+      },
+      {
+        "field": 6,
+        "start": 413,
+        "end": 425,
+        "text": "555-492-1083",
+        "category": "PII.CONTACT.PHONE_NUMBER",
+        "classifier_id": "CLS-PII-PHONE-001",
+        "confidence": 0.90,
+        "mask": "■■■-■■■-1083",
+        "decision": "APPROVE"
+      },
+      {
+        "field": 7,
+        "start": 461,
+        "end": 472,
+        "text": "Ms. Higgins",
+        "category": "PII.PERSON_NAME",
+        "classifier_id": "CLS-PII-NAME-001",
+        "confidence": 0.88,
+        "mask": "■■■ ■■■■■■■",
+        "decision": "APPROVE"
+      },
+      {
+        "field": 8,
+        "start": 635,
+        "end": 649,
+        "text": "Brenda Higgins",
+        "category": "PII.PERSON_NAME",
+        "classifier_id": "CLS-PII-NAME-001",
+        "confidence": 0.93,
+        "mask": "■■■■■■ ■■■■■■■",
+        "decision": "APPROVE"
+      },
+      {
+        "field": 9,
+        "start": 672,
+        "end": 689,
+        "text": "November 14, 1982",
+        "category": "PII.DEMOGRAPHIC.DATE_OF_BIRTH",
+        "classifier_id": "CLS-PII-DOB-001",
+        "confidence": 0.97,
+        "mask": "■■■■■■■■ ■■, ■■■■",
+        "decision": "APPROVE"
+      },
+      {
+        "field": 10,
+        "start": 863,
+        "end": 877,
+        "text": "Brenda Higgins",
+        "category": "PII.PERSON_NAME",
+        "classifier_id": "CLS-PII-NAME-001",
+        "confidence": 0.93,
+        "mask": "■■■■■■ ■■■■■■■",
+        "decision": "APPROVE"
+      },
+      {
+        "field": 11,
+        "start": 1048,
+        "end": 1054,
+        "text": "Brenda",
+        "category": "PII.PERSON_NAME",
+        "classifier_id": "CLS-PII-NAME-001",
+        "confidence": 0.82,
+        "mask": "■■■■■■",
+        "decision": "APPROVE"
+      },
+      {
+        "field": 12,
+        "start": 1194,
+        "end": 1208,
+        "text": "Brenda Higgins",
+        "category": "PII.PERSON_NAME",
+        "classifier_id": "CLS-PII-NAME-001",
+        "confidence": 0.93,
+        "mask": "■■■■■■ ■■■■■■■",
+        "decision": "APPROVE"
+      },
+      {
+        "field": 13,
+        "start": 1282,
+        "end": 1315,
+        "text": "brenda.higgins82@example-mail.net",
+        "category": "PII.CONTACT.EMAIL",
+        "classifier_id": "CLS-PII-EMAIL-001",
+        "confidence": 0.95,
+        "mask": "■■■■■■■■■■■■■■■@example-mail.net",
+        "decision": "APPROVE"
+      },
+      {
+        "field": 14,
+        "start": 1393,
+        "end": 1426,
+        "text": "brenda.higgins82@example-mail.net",
+        "category": "PII.CONTACT.EMAIL",
+        "classifier_id": "CLS-PII-EMAIL-001",
+        "confidence": 0.95,
+        "mask": "■■■■■■■■■■■■■■■@example-mail.net",
+        "decision": "APPROVE"
+      },
+      {
+        "field": 15,
+        "start": 1491,
+        "end": 1505,
+        "text": "Brenda Higgins",
+        "category": "PII.PERSON_NAME",
+        "classifier_id": "CLS-PII-NAME-001",
+        "confidence": 0.93,
+        "mask": "■■■■■■ ■■■■■■■",
+        "decision": "APPROVE"
+      }
+    ],
+    "final_status": "READY_FOR_STAGE_4_HARDENING"
+  }
+}
+```
+
+[AGENT] @ 2026-10-19 14:43:56:
+```json
+{
+    "caveats": [
+        "Token usage is tracked at the agent level. Counts include usage from any downstream agents called on this agent's behalf.",
+        "Token counts are approximate and estimated using tiktoken.",
+        "time_taken_in_seconds includes overhead from Langchain and Neuro SAN"
+    ],
+    "completion_tokens": 4148,
+    "empty_responses": 0,
+    "prompt_tokens": 2696,
+    "successful_requests": 1,
+    "time_taken_in_seconds": 12.075376987457275,
+    "total_cost": 0.0,
+    "total_tokens": 6844
+}
+```
+
+[SYSTEM] @ 2026-10-19 17:34:52:
+
+You are part of a team of assistants in hitl_document_redaction_obfuscation_network.
+Only answer inquiries that are directly within your area of expertise.
+Do not try to help for other matters.
+Do not mention what you can NOT do. Only mention what you can do.
+ 
+You are the Human-in-the-Loop (HITL) gateway for granular, field-by-field DSAR document redaction review.
+Your purpose is to present each detected sensitive field one-by-one to the human operator, capture their decision for that specific field, and maintain the approval ledger.
+
+Scope of work:
+1. DSAR Exemption Banner (on Field 1 or summary):
+   - When `requestor_name` is active, clearly state:
+     - **DSAR Requestor (Data Subject):** `<requestor_name>` (Name preserved unredacted across `<preserved_requestor_count>` occurrence(s) in document/filename per DSAR rules).
+     - **Redaction Scope:** Third-party person names are fully redacted (`■`), and all other PII/PHI fields (phone numbers, addresses, emails, financial/ID numbers, etc.) are partially/appropriately redacted as usual.
+2. Field-by-Field Presentation:
+   - For a document with N active detected sensitive fields to review, present the current field under review (Field K of N):
+     - **Field Progress:** Field K of N (e.g. "Field 1 of 11" or "Field 11 of 11 [File Name]")
+     - **Category:** Category name (e.g. `PII.PERSON_NAME (Third-Party)`, `PII.CONTACT.PHONE_NUMBER`, `PII.LOCATION.STREET_ADDRESS`, `PII.PERSON_NAME (File Name)`)
+     - **Detected Value:** Exact text detected (e.g. `"Oliver"`, `"+44 7700 900077"`)
+     - **Proposed Mask:**
+       - **For File Name PII**: Redact sensitive characters in the filename by placing `'X'` in those places in the name (e.g. `"XXXXXX_X_Transcription_redacted.pdf"`).
+       - **For Document Content PII**: Display the calculated mask according to category-appropriate partial masking policies (using solid black squares `■` for redacted characters):
+         - **Email (`PII.CONTACT.EMAIL`)**: Local username before `@` masked with `■`; `@` and domain name kept unmasked (e.g. `"j.doe@example.org"` -> `"■■■■■@example.org"`).
+         - **Phone Number (`PII.CONTACT.PHONE_NUMBER`)**: Country code (e.g. `+1`, `+44`) and formatting punctuation `(`, `)`, `-`, ` ` preserved; subscriber digits masked with `■` (e.g. `"+1 (555) 712-4091"` -> `"+1 (■■■) ■■■-■■■■"`, `"+44 7700 900077"` -> `"+44 ■■■■ ■■■■■■"`).
+         - **Credit Card (`PII.FINANCIAL.CREDIT_CARD`)**: PCI DSS standard; all digits masked with `■` except the last 4 digits, preserving delimiters/hyphens/newlines (e.g. `"4532-8910-4321-9081"` -> `"■■■■-■■■■-■■■■-9081"`).
+         - **Social Security Number (`PII.IDENTIFIER.SSN`)**: US standard; first 5 digits masked with `■`, last 4 digits and hyphens preserved (e.g. `"483-92-1049"` -> `"■■■-■■-1049"`).
+         - **UK National Insurance Number (`PII.IDENTIFIER.UK_NINO`)**: First 2 letters and first 4 digits masked with `■`, last 2 digits and suffix letter preserved (e.g. `"QQ 12 34 56 A"` -> `"■■ ■■ ■■ 56 A"`).
+         - **UK NHS Number (`PHI.MEDICAL_IDENTIFIER.UK_NHS_NUMBER`)**: First 6 digits masked with `■`, last 4 digits preserved (e.g. `"485 777 3456"` -> `"■■■ ■■■ 3456"`).
+         - **UK Postcode (`PII.LOCATION.UK_POSTCODE`)**: Outward area code preserved, inward unit masked with `■■■` (e.g. `"SW1A 2AA"` -> `"SW1A ■■■"`).
+         - **UK Bank Sort Code (`PII.FINANCIAL.UK_SORT_CODE`)**: First 4 digits masked with `■`, last 2 digits preserved (e.g. `"20-04-15"` -> `"■■-■■-15"`).
+         - **UK Unique Taxpayer Reference (`PII.IDENTIFIER.UK_UTR`)**: First 6 digits masked with `■`, last 4 digits preserved (e.g. `"1234567890"` -> `"■■■■■■7890"`).
+         - **Bank Account / IBAN (`PII.FINANCIAL.IBAN`, `PII.FINANCIAL.BANK_ACCOUNT_NUMBER`)**: Preserve last 4 digits (or IBAN country code + last 2-4 digits), mask earlier digits with `■` (e.g. `"89123456"` -> `"■■■■3456"`).
+         - **Street Address (`PII.LOCATION.STREET_ADDRESS`)**: Street number and street name masked with `■`; city, state, zip code preserved (e.g. `"100 Cyberdyne Way, Suite 400, Portland, OR 97201"` -> `"■■■ ■■■■■■■■■ ■■■, ■■■■■ ■■■, Portland, OR 97201"`).
+         - **Health Insurance ID (`PHI.MEDICAL_IDENTIFIER.HEALTH_INSURANCE_MEMBER_ID`)**: Plan prefix (e.g. `HI-`) and suffix code (e.g. `-B`) preserved, member digits masked with `■` (e.g. `"HI-902849102-B"` -> `"HI-■■■■■■■■■-B"`).
+         - **Third-Party Full Name, Username, Passport**: Full character-for-character masking with solid black squares `■` (e.g. `"Oliver"` -> `"■■■■■■"`, `"mavance_admin"` -> `"■■■■■■■■■■■■■"`).
+     - **Context:** Brief surrounding text showing where the field appears (or filename location)
+     - **Confidence:** Detection confidence (e.g. `0.95`)
+   - Prompt the operator with clear options:
+     - Reply **APPROVE** (or "Yes") to redact this field (using '■' for document content, or 'X' in the file name).
+     - Reply **SKIP** or **REJECT** (or "No") to leave this field unmasked in the final document and filename.
+     - *(Optional: reply **APPROVE ALL** to approve this and all remaining fields)*
+3. Execution Gate:
+   - Halt in WAITING_FOR_HUMAN after presenting each field (auto_advance_on_timeout: false).
+   - Never fabricate, assume, or auto-fill a decision.
+4. Decision Processing:
+   - When the operator responds for Field K:
+     - On "APPROVE", "Approve", "Yes", or "A": mark Field K as `decision: "APPROVE"`.
+     - On "SKIP", "Skip", "REJECT", "Reject", "No", or "S": mark Field K as `decision: "REJECT"`.
+     - On "APPROVE ALL" or "Approve All": mark Field K and all subsequent fields as `decision: "APPROVE"`.
+   - Record the decision in the approval_ledger with reviewer reference and timestamp.
+   - If K < N: advance to Field K+1 and present Field K+1.
+   - If K == N (all fields reviewed):
+     - Present a concise Review Summary showing:
+       - DSAR Requestor (`requestor_name`) and count of requestor name occurrences preserved unredacted
+       - Total sensitive fields evaluated for redaction: N
+       - Fields approved for redaction: count of approved fields
+       - Fields kept unmasked: count of skipped/rejected fields
+     - Emit the finalized approved_spans list to the supervisor for Stage 4 hardening.
+
+When you receive an inquiry, you will:
+1. If you are clearly not the right agent for this type of inquiry, reply you're not relevant.
+2. If there is a chance you're relevant, call your down-chain agents to determine if they can answer all or part of the inquiry.
+   Do not assume what your down-chain agents can do. Always call them. You'll be surprised.
+3. Determine which down-chain agents have the strongest claims to the inquiry.
+   3.1 If the inquiry is ambiguous, for example if more than one agent can fulfill the inquiry, then always ask for clarification.
+   3.2 Otherwise, call the relevant down-chain agents and:
+       - ask them for follow-up information if needed,
+       - or ask them to fulfill their part of the inquiry.
+4. Once all relevant down-chain agents have responded, either follow up with them to provide requirements or,
+   if all requirements have been fulfilled, compile their responses and return the final response.
+You may, in turn, be called by other agents in the system and have to act as a down-chain agent to them.
+5. When responding, format your response based on the 'mode' parameter:
+   - If there is no 'mode' parameter (i.e., the inquiry came directly from a human),
+     respond with a natural, human-readable answer.
+   - If mode is 'Determine', return a json block with the following fields:
+   {
+       "Name": <your name>,
+       "Inquiry": <the inquiry>,
+       "Mode": <Determine | Fulfill>,
+       "Relevant": <Yes | No>,
+       "Strength": <number between 1 and 10 representing how certain you are in your claim>,
+       "Claim:" <All | Partial>,
+       "Requirements" <None | list of requirements>
+   }
+   - If mode is 'Fulfill' or "Follow up", respond to the inquiry and return a json block with the following fields:
+   {
+       "Name": <your name>,
+       "Inquiry": <the inquiry>,
+       "Mode": Fulfill,
+       "Response" <your response>
+   }
+            
+
+[HUMAN] @ 2026-10-19 17:34:52:
+The inquiry is 'Here is the ordered 36-record active detection field list for document_id doc-sample_pii_test_data (sample_pii_test_data.pdf), dsar_requestor_name: Sarah Elizabeth Jenkins, ruleset rev-003 PINNED, decision: APPROVE ALL. Please write the approval_ledger rows (decision=APPROVE, reviewer=human_operator, timestamp at write) and return the finalized approved_spans list.
+
+Field 1: id=F01, category=PHI.MEDICAL_IDENTIFIER, text="REC-2026-08912", offset 225-239, mask=full "■■■■■■■■■■■■■■", conf=0.95, dsar_role=REDACT_USUAL
+Field 2: id=F02, category=PII.IDENTIFIER.EMPLOYEE_ID, text="AGENT_4092", 282-292, mask=full, conf=0.95
+Field 3: id=F03, category=PII.DEMOGRAPHIC.DATE_OF_BIRTH, text="1988-04-12", 362-372, mask=full, conf=0.95
+Field 4: id=F04, category=PII.IDENTIFIER.SSN, text="483-92-1049", 411-422, mask="■■■-■■-1049" (last-4 preserved), conf=0.95
+Field 5: id=F05, category=PII.CONTACT.PHONE_NUMBER, text="+1 (555) 382-9102", 438-455, mask="+1 (■■■) ■■■-■■■■", conf=0.95
+Field 6: id=F06, category=PII.CONTACT.PHONE_NUMBER, text="+1 (555) 902-1148", 473-490, mask="+1 (■■■) ■■■-■■■■", conf=0.95
+Field 7: id=F07, category=PII.CONTACT.EMAIL, text="s.jenkins88@example-mail.com", 506-534, mask="■■■■■■■■■■■@example-mail.com", conf=0.95
+Field 8: id=F08, category=PII.LOCATION.STREET_ADDRESS, text="742 Evergreen Terrace, Springfield, OR 97477", 556-600, mask="■■■ ■■■■■■■■■ ■■■■■■■, Springfield, OR 97477", conf=0.95
+Field 9: id=F09, category=PII.LOCATION.IP_ADDRESS, text="192.168.1.142", 613-626, mask="■■■.■■■.■.■■■", conf=0.95
+Field 10: id=F10, category=PII.LOCATION.IP_ADDRESS, text="2001:0db8:85a3:0000:0000:8a2e:0370:7334", 629-668, mask=partial, conf=0.95
+Field 11: id=F11, category=PII.FINANCIAL.CREDIT_CARD, text="4532-8910-4321-9081", 709-728, mask="■■■■-■■■■-■■■■-9081" (last-4 preserved), conf=0.86
+Field 12: id=F12, category=PII.FINANCIAL.IBAN, text="US39 OBAK 0123 4567 8901 23", 782-809, mask="US39 ■■■■ ■■■■ ■■■■ ■■■■ 23", conf=0.95
+Field 13: id=F13, category=PII.LOCATION.STREET_ADDRESS, text="742 Evergreen Terrace, Springfield, OR 97477", 827-871, mask="■■■ ■■■■■■■■■ ■■■■■■■, Springfield, OR 97477", conf=0.95
+Field 14: id=F14, category=PII.LOCATION.STREET_ADDRESS, text="742 Evergreen Terrace", 1266-1287, mask="■■■ ■■■■■■■■■ ■■■■■■■", conf=0.95
+Field 15: id=F15, category=PII.FINANCIAL.CREDIT_CARD, text="4532-8910-4321-9081", 1483-1502, mask="■■■■-■■■■-■■■■-9081", conf=0.86
+Field 16: id=F16, category=PII.CONTACT.EMAIL, text="s.jenkins88@example-mail.com", 1592-1620, mask="■■■■■■■■■■■@example-mail.com", conf=0.95
+Field 17: id=F17, category=PII.CONTACT.PHONE_NUMBER, text="555-382-9102", 1635-1647, mask="■■■-■■■-■■■■", conf=0.95
+Field 18: id=F18, category=PII.FINANCIAL.IBAN, text="US39 OBAK 0123 4567 8901 23", 1723-1750, mask="US39 ■■■■ ■■■■ ■■■■ ■■■■ 23", conf=0.95
+Field 19: id=F19, category=PHI.MEDICAL_IDENTIFIER, text="REC-2026-08913", 1891-1905, mask=full, conf=0.95
+Field 20: id=F20, category=PII.IDENTIFIER.EMPLOYEE_ID, text="AGENT_1022", 1948-1958, mask=full, conf=0.95
+Field 21: id=F21, category=PII.PERSON_NAME (Third-Party), text="Dr. Marcus Aurelius Vance", 1989-2014, mask=full "■■■ ■■■■■■ ■■■■■■■■ ■■■■■", conf=0.95, dsar_role=THIRD_PARTY/REDACT_FULL
+Field 22: id=F22, category=PII.DEMOGRAPHIC.DATE_OF_BIRTH, text="1975-11-30", 2030-2040, mask=full, conf=0.95
+Field 23: id=F23, category=PII.IDENTIFIER.PASSPORT, text="N89201492", 2058-2067, mask=full, conf=0.95
+Field 24: id=F24, category=PII.IDENTIFIER.DRIVERS_LICENSE, text="DL-8830192-OR", 2089-2102, mask=full, conf=0.95
+Field 25: id=F25, category=PII.CONTACT.PHONE_NUMBER, text="+1 (555) 712-4091", 2118-2135, mask="+1 (■■■) ■■■-■■■■", conf=0.95
+Field 26: id=F26, category=PII.CONTACT.EMAIL, text="m.vance@vanceresearch-labs.org", 2153-2183, mask="■■■■■■■@vanceresearch-labs.org", conf=0.95
+Field 27: id=F27, category=PII.LOCATION.STREET_ADDRESS, text="100 Cyberdyne Way, Suite 400, Portland, OR 97201", 2198-2246, mask="■■■ ■■■■■■■■■ ■■■, ■■■■■ ■■■, Portland, OR 97201", conf=0.95
+Field 28: id=F28, category=PHI.MEDICAL_IDENTIFIER, text="MC-9021-X", 2303-2312, mask=full, conf=0.95
+Field 29: id=F29, category=PHI.MEDICAL_IDENTIFIER, text="MEM-309182", 2332-2342, mask=full, conf=0.95
+Field 30: id=F30, category=PHI.HEALTH_DATA, text="emergency dispensation", 2369-2391, mask=full, conf=0.90
+Field 31: id=F31, category=PII.PERSON_NAME (Third-Party), text="Dr. Vance", 2400-2409, mask=full "■■■ ■■■■■", conf=0.95, dsar_role=THIRD_PARTY/REDACT_FULL
+Field 32: id=F32, category=PHI.HEALTH_DATA, text="penicillin allergy", 2429-2447, mask=full, conf=0.90
+Field 33: id=F33, category=PHI.HEALTH_DATA, text="prescription adjustment", 2459-2482, mask=full, conf=0.90
+Field 34: id=F34, category=PHI.HEALTH_DATA, text="Hypertension", 2487-2499, mask=full, conf=0.90
+Field 35: id=F35, category=PII.PERSON_NAME (Third-Party), text="Elena Vance", 2522-2533, mask=full "■■■■■ ■■■■■", conf=0.90, dsar_role=THIRD_PARTY/REDACT_FULL
+Field 36: id=F36, category=PII.CONTACT.PHONE_NUMBER, text="555-712-4099", 2556-2568, mask="■■■-■■■-■■■■", conf=0.95
+
+Decision for ALL 36: APPROVE. filename_redaction_approved=false. Return finalized approved_spans for handoff to final_obfuscation_encoding_agent.'.
+The mode is 'Follow up'.
+
+[AI] @ 2026-10-19 17:35:39:
+{
+  "Name": "hitl_document_redaction_obfuscation_network",
+  "Inquiry": "APPROVE ALL for doc-sample_pii_test_data (36 fields); write approval_ledger rows and return finalized approved_spans; filename_redaction_approved=false.",
+  "Mode": "Fulfill",
+  "Response": {
+    "status": "FINALIZED_APPROVED_SPANS_EMITTED",
+    "document_id": "doc-sample_pii_test_data",
+    "document_filename": "sample_pii_test_data.pdf",
+    "ruleset_revision": "rev-003",
+    "decision_policy_applied": "APPROVE ALL",
+    "ledger_write_timestamp_note": "Timestamp is populated by the gateway at write time; represented here as WRITE_TIME_UTC.",
+    "dsar_banner": {
+      "dsar_requestor_name": "Sarah Elizabeth Jenkins",
+      "preserved_requestor_count": "Not supplied in the 36-field active detection list; requestor name is preserved unredacted per DSAR rules.",
+      "redaction_scope": "Third-party person names are fully redacted with ■. All other PII/PHI fields are partially or fully redacted according to the supplied field masks. File name redaction is not approved: filename_redaction_approved=false."
+    },
+    "review_summary": {
+      "total_sensitive_fields_evaluated": 36,
+      "fields_approved_for_redaction": 36,
+      "fields_kept_unmasked": 0,
+      "reviewer": "human_operator",
+      "filename_redaction_approved": false
+    },
+    "approval_ledger": [
+      {"field_id": "F01", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F02", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F03", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F04", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F05", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F06", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F07", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F08", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F09", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F10", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F11", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F12", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F13", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F14", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F15", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F16", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F17", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F18", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F19", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F20", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F21", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F22", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F23", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F24", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F25", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F26", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F27", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F28", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F29", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F30", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F31", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F32", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F33", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F34", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F35", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"},
+      {"field_id": "F36", "decision": "APPROVE", "reviewer": "human_operator", "timestamp": "WRITE_TIME_UTC"}
+    ],
+    "approved_spans": [
+      {"id": "F01", "category": "PHI.MEDICAL_IDENTIFIER", "text": "REC-2026-08912", "start": 225, "end": 239, "mask": "full", "confidence": 0.95, "decision": "APPROVE", "dsar_role": "REDACT_USUAL"},
+      {"id": "F02", "category": "PII.IDENTIFIER.EMPLOYEE_ID", "text": "AGENT_4092", "start": 282, "end": 292, "mask": "full", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F03", "category": "PII.DEMOGRAPHIC.DATE_OF_BIRTH", "text": "1988-04-12", "start": 362, "end": 372, "mask": "full", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F04", "category": "PII.IDENTIFIER.SSN", "text": "483-92-1049", "start": 411, "end": 422, "mask": "■■■-■■-1049", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F05", "category": "PII.CONTACT.PHONE_NUMBER", "text": "+1 (555) 382-9102", "start": 438, "end": 455, "mask": "+1 (■■■) ■■■-■■■■", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F06", "category": "PII.CONTACT.PHONE_NUMBER", "text": "+1 (555) 902-1148", "start": 473, "end": 490, "mask": "+1 (■■■) ■■■-■■■■", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F07", "category": "PII.CONTACT.EMAIL", "text": "s.jenkins88@example-mail.com", "start": 506, "end": 534, "mask": "■■■■■■■■■■■@example-mail.com", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F08", "category": "PII.LOCATION.STREET_ADDRESS", "text": "742 Evergreen Terrace, Springfield, OR 97477", "start": 556, "end": 600, "mask": "■■■ ■■■■■■■■■ ■■■■■■■, Springfield, OR 97477", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F09", "category": "PII.LOCATION.IP_ADDRESS", "text": "192.168.1.142", "start": 613, "end": 626, "mask": "■■■.■■■.■.■■■", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F10", "category": "PII.LOCATION.IP_ADDRESS", "text": "2001:0db8:85a3:0000:0000:8a2e:0370:7334", "start": 629, "end": 668, "mask": "partial", "mask_note": "Supplied as partial; exact character expansion not provided in source list.", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F11", "category": "PII.FINANCIAL.CREDIT_CARD", "text": "4532-8910-4321-9081", "start": 709, "end": 728, "mask": "■■■■-■■■■-■■■■-9081", "confidence": 0.86, "decision": "APPROVE"},
+      {"id": "F12", "category": "PII.FINANCIAL.IBAN", "text": "US39 OBAK 0123 4567 8901 23", "start": 782, "end": 809, "mask": "US39 ■■■■ ■■■■ ■■■■ ■■■■ 23", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F13", "category": "PII.LOCATION.STREET_ADDRESS", "text": "742 Evergreen Terrace, Springfield, OR 97477", "start": 827, "end": 871, "mask": "■■■ ■■■■■■■■■ ■■■■■■■, Springfield, OR 97477", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F14", "category": "PII.LOCATION.STREET_ADDRESS", "text": "742 Evergreen Terrace", "start": 1266, "end": 1287, "mask": "■■■ ■■■■■■■■■ ■■■■■■■", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F15", "category": "PII.FINANCIAL.CREDIT_CARD", "text": "4532-8910-4321-9081", "start": 1483, "end": 1502, "mask": "■■■■-■■■■-■■■■-9081", "confidence": 0.86, "decision": "APPROVE"},
+      {"id": "F16", "category": "PII.CONTACT.EMAIL", "text": "s.jenkins88@example-mail.com", "start": 1592, "end": 1620, "mask": "■■■■■■■■■■■@example-mail.com", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F17", "category": "PII.CONTACT.PHONE_NUMBER", "text": "555-382-9102", "start": 1635, "end": 1647, "mask": "■■■-■■■-■■■■", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F18", "category": "PII.FINANCIAL.IBAN", "text": "US39 OBAK 0123 4567 8901 23", "start": 1723, "end": 1750, "mask": "US39 ■■■■ ■■■■ ■■■■ ■■■■ 23", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F19", "category": "PHI.MEDICAL_IDENTIFIER", "text": "REC-2026-08913", "start": 1891, "end": 1905, "mask": "full", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F20", "category": "PII.IDENTIFIER.EMPLOYEE_ID", "text": "AGENT_1022", "start": 1948, "end": 1958, "mask": "full", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F21", "category": "PII.PERSON_NAME (Third-Party)", "text": "Dr. Marcus Aurelius Vance", "start": 1989, "end": 2014, "mask": "■■■ ■■■■■■ ■■■■■■■■ ■■■■■", "confidence": 0.95, "decision": "APPROVE", "dsar_role": "THIRD_PARTY/REDACT_FULL"},
+      {"id": "F22", "category": "PII.DEMOGRAPHIC.DATE_OF_BIRTH", "text": "1975-11-30", "start": 2030, "end": 2040, "mask": "full", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F23", "category": "PII.IDENTIFIER.PASSPORT", "text": "N89201492", "start": 2058, "end": 2067, "mask": "full", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F24", "category": "PII.IDENTIFIER.DRIVERS_LICENSE", "text": "DL-8830192-OR", "start": 2089, "end": 2102, "mask": "full", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F25", "category": "PII.CONTACT.PHONE_NUMBER", "text": "+1 (555) 712-4091", "start": 2118, "end": 2135, "mask": "+1 (■■■) ■■■-■■■■", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F26", "category": "PII.CONTACT.EMAIL", "text": "m.vance@vanceresearch-labs.org", "start": 2153, "end": 2183, "mask": "■■■■■■■@vanceresearch-labs.org", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F27", "category": "PII.LOCATION.STREET_ADDRESS", "text": "100 Cyberdyne Way, Suite 400, Portland, OR 97201", "start": 2198, "end": 2246, "mask": "■■■ ■■■■■■■■■ ■■■, ■■■■■ ■■■, Portland, OR 97201", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F28", "category": "PHI.MEDICAL_IDENTIFIER", "text": "MC-9021-X", "start": 2303, "end": 2312, "mask": "full", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F29", "category": "PHI.MEDICAL_IDENTIFIER", "text": "MEM-309182", "start": 2332, "end": 2342, "mask": "full", "confidence": 0.95, "decision": "APPROVE"},
+      {"id": "F30", "category": "PHI.HEALTH_DATA", "text": "emergency dispensation", "start": 2369, "end": 2391, "mask": "full", "confidence": 0.90, "decision": "APPROVE"},
+      {"id": "F31", "category": "PII.PERSON_NAME (Third-Party)", "text": "Dr. Vance", "start": 2400, "end": 2409, "mask": "■■■ ■■■■■", "confidence": 0.95, "decision": "APPROVE", "dsar_role": "THIRD_PARTY/REDACT_FULL"},
+      {"id": "F32", "category": "PHI.HEALTH_DATA", "text": "penicillin allergy", "start": 2429, "end": 2447, "mask": "full", "confidence": 0.90, "decision": "APPROVE"},
+      {"id": "F33", "category": "PHI.HEALTH_DATA", "text": "prescription adjustment", "start": 2459, "end": 2482, "mask": "full", "confidence": 0.90, "decision": "APPROVE"},
+      {"id": "F34", "category": "PHI.HEALTH_DATA", "text": "Hypertension", "start": 2487, "end": 2499, "mask": "full", "confidence": 0.90, "decision": "APPROVE"},
+      {"id": "F35", "category": "PII.PERSON_NAME (Third-Party)", "text": "Elena Vance", "start": 2522, "end": 2533, "mask": "■■■■■ ■■■■■", "confidence": 0.90, "decision": "APPROVE", "dsar_role": "THIRD_PARTY/REDACT_FULL"},
+      {"id": "F36", "category": "PII.CONTACT.PHONE_NUMBER", "text": "555-712-4099", "start": 2556, "end": 2568, "mask": "■■■-■■■-■■■■", "confidence": 0.95, "decision": "APPROVE"}
+    ],
+    "handoff": {
+      "to": "final_obfuscation_encoding_agent",
+      "approved_spans_ready": true,
+      "filename_redaction_approved": false
+    }
+  }
+}
+
+[AGENT] @ 2026-10-19 17:35:39:
+```json
+{
+    "caveats": [
+        "Token usage is tracked at the agent level. Counts include usage from any downstream agents called on this agent's behalf.",
+        "Token counts are approximate and estimated using tiktoken.",
+        "time_taken_in_seconds includes overhead from Langchain and Neuro SAN"
+    ],
+    "completion_tokens": 10012,
+    "empty_responses": 0,
+    "prompt_tokens": 4458,
+    "successful_requests": 1,
+    "time_taken_in_seconds": 47.20062494277954,
+    "total_cost": 0.0,
+    "total_tokens": 14470
+}
+```

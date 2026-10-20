@@ -1,0 +1,843 @@
+Agent: orchestrator_supervisor_agent.agent-02
+
+[SYSTEM] @ 2026-10-15 14:27:10:
+
+You are part of a team of assistants in hitl_document_redaction_obfuscation_network.
+Only answer inquiries that are directly within your area of expertise.
+Do not try to help for other matters.
+Do not mention what you can NOT do. Only mention what you can do.
+ You are part of a demo system, so when queried, make up a realistic response as if you are actually grounded in real data or you are operating a real application API or microservice. 
+You are agent.
+
+
+[HUMAN] @ 2026-10-15 14:27:10:
+The inquiry is 'Fulfill: perform initial sensitive-content discovery/detection and redaction-span analysis on the two page_units below. Produce per page: redaction_map (span offsets, category/subtype, confidence), redacted_text_with_masks, and any overlap/merge notes. Preserve page_id and index exactly. Do NOT request human approval; hand outputs to the HITL gate. Here are the page_units:
+
+PAGE UNIT index 0, page_id=976fee1d736893787c0c50a4ce51ad4d0a4fdc337c5160a32ca10ea0d006bf33, page_hash=815d7eaa4cb2a90e08b6e2a76c5eb55800f70d5ca6d866be577915ae4008228f:
+================================================================================
+CUSTOMER SUPPORT & DSAR REQUEST LOGS - TEST DATASET
+================================================================================
+
+RECORD ID: REC-2026-08912
+TIMESTAMP: 2026-10-14T09:14:22Z
+AGENT ID: AGENT_4092
+
+[CUSTOMER PROFILE]
+Full Name: Sarah Elizabeth Jenkins
+Date of Birth: 1988-04-12
+Social Security Number / National ID: 483-92-1049
+Primary Phone: +1 (555) 382-9102
+Secondary Phone: +1 (555) 902-1148
+Email Address: s.jenkins88@example-mail.com
+Residential Address: 742 Evergreen Terrace, Springfield, OR 97477
+IP Address: 192.168.1.142 / 2001:0db8:85a3:0000:0000:8a2e:0370:7334
+
+[FINANCIAL DETAILS]
+Credit Card Number: 4532-8910-4321-9081
+Card Expiration: 08/28
+CVV: 492
+Bank Account (IBAN): US39 OBAK 0123 4567 8901 23
+Billing Address: 742 Evergreen Terrace, Springfield, OR 97477
+
+[CUSTOMER SUPPORT TRANSCRIPT]
+[09:14:22] Sarah Jenkins: Hi, I'm calling regarding an unexpected charge on my account ending in 9081. My name is Sarah Jenkins, born April 12, 1988.
+[09:15:02] Agent 4092: Hello Ms. Jenkins. I can help with that. To verify your identity, could you please confirm your full billing address and the last four digits of your SSN?
+[09:15:20] Sarah Jenkins: Yes, it's 742 Evergreen Terrace, Springfield, Oregon, 97477, and the last four of my SSN are 1049.
+[09:16:05] Agent 4092: Thank you, Sarah. I have pulled up your record. I see the charge made on 2026-10-10 using your visa card 4532-8910-4321-9081.
+[09:16:40] Sarah Jenkins: Right, that wasn't me. Please send the refund confirmation to s.jenkins88@example-mail.com or text me at 555-382-9102.
+[09:17:10] Agent 4092: I have initiated the chargeback to your account at US39 OBAK 0123 4567 8901 23. You will receive a confirmation email shortly.
+
+--------
+
+PAGE UNIT index 1, page_id=f7e0ec0e37f8a4e389add48d69ecdebaa4417933b5439350648c868c922e7110, page_hash=5d35c1f541bde29be6af9472873345af031a216c7e9b2cd75019a10d14275eb8:
+------------------------------------------------------------------------
+
+RECORD ID: REC-2026-08913
+TIMESTAMP: 2026-10-14T11:02:15Z
+AGENT ID: AGENT_1022
+
+[CUSTOMER PROFILE]
+Full Name: Dr. Marcus Aurelius Vance
+Date of Birth: 1975-11-30
+Passport Number: N89201492
+Driver's License ID: DL-8830192-OR
+Primary Phone: +1 (555) 712-4091
+Email Address: m.vance@vanceresearch-labs.org
+Work Address: 100 Cyberdyne Way, Suite 400, Portland, OR 97201
+
+[INTERNAL NOTES & HEALTH INFORMATION]
+Medical Case Ref: MC-9021-X
+Patient/Member ID: MEM-309182
+Notes: Customer requested emergency dispensation update. Dr. Vance noted a history of penicillin allergy and recent prescription adjustment for Hypertension. Emergency contact is Elena Vance (Spouse) reachable at 555-712-4099.
+
+================================================================================
+END OF TEST DATA FILE'.
+The mode is 'Fulfill'.
+
+[AI] @ 2026-10-15 14:28:06:
+{
+  "job": "sensitive-content-discovery/redaction-span-analysis",
+  "mode": "Fulfill",
+  "hitl_gate_handoff": {
+    "status": "queued",
+    "target": "HITL_GATE",
+    "approval_required": false,
+    "artifact_id": "redaction-preanalysis-976fee1d-f7e0ec0e",
+    "notes": "Automated pre-redaction analysis completed. No human approval requested; outputs are handed to the HITL gate for downstream review/application."
+  },
+  "offset_basis": "0-based, end-exclusive character offsets against the supplied page_unit text as displayed.",
+  "pages": [
+    {
+      "index": 0,
+      "page_id": "976fee1d736893787c0c50a4ce51ad4d0a4fdc337c5160a32ca10ea0d006bf33",
+      "page_hash": "815d7eaa4cb2a90e08b6e2a76c5eb55800f70d5ca6d866be577915ae4008228f",
+      "redaction_map": [
+        {"span_id": "p0-001", "start": 226, "end": 240, "text": "REC-2026-08912", "category": "INTERNAL", "subtype": "record_id", "confidence": 0.88, "mask": "[RECORD_ID]"},
+        {"span_id": "p0-002", "start": 283, "end": 293, "text": "AGENT_4092", "category": "INTERNAL", "subtype": "agent_id", "confidence": 0.90, "mask": "[AGENT_ID]"},
+        {"span_id": "p0-003", "start": 325, "end": 348, "text": "Sarah Elizabeth Jenkins", "category": "PII", "subtype": "full_name", "confidence": 0.99, "mask": "[FULL_NAME]"},
+        {"span_id": "p0-004", "start": 364, "end": 374, "text": "1988-04-12", "category": "PII", "subtype": "date_of_birth", "confidence": 0.99, "mask": "[DOB]"},
+        {"span_id": "p0-005", "start": 413, "end": 424, "text": "483-92-1049", "category": "PII", "subtype": "ssn", "confidence": 0.99, "mask": "[SSN]"},
+        {"span_id": "p0-006", "start": 440, "end": 457, "text": "+1 (555) 382-9102", "category": "PII", "subtype": "phone", "confidence": 0.99, "mask": "[PHONE]"},
+        {"span_id": "p0-007", "start": 475, "end": 492, "text": "+1 (555) 902-1148", "category": "PII", "subtype": "phone", "confidence": 0.99, "mask": "[PHONE]"},
+        {"span_id": "p0-008", "start": 508, "end": 536, "text": "s.jenkins88@example-mail.com", "category": "PII", "subtype": "email", "confidence": 0.99, "mask": "[EMAIL]"},
+        {"span_id": "p0-009", "start": 558, "end": 602, "text": "742 Evergreen Terrace, Springfield, OR 97477", "category": "PII", "subtype": "address", "confidence": 0.98, "mask": "[ADDRESS]"},
+        {"span_id": "p0-010", "start": 615, "end": 628, "text": "192.168.1.142", "category": "PII", "subtype": "ip_address", "confidence": 0.99, "mask": "[IP_ADDRESS]"},
+        {"span_id": "p0-011", "start": 631, "end": 670, "text": "2001:0db8:85a3:0000:0000:8a2e:0370:7334", "category": "PII", "subtype": "ip_address", "confidence": 0.99, "mask": "[IP_ADDRESS]"},
+        {"span_id": "p0-012", "start": 712, "end": 731, "text": "4532-8910-4321-9081", "category": "FINANCIAL", "subtype": "credit_card", "confidence": 0.99, "mask": "[CREDIT_CARD]"},
+        {"span_id": "p0-013", "start": 749, "end": 754, "text": "08/28", "category": "FINANCIAL", "subtype": "card_expiration", "confidence": 0.95, "mask": "[CARD_EXPIRATION]"},
+        {"span_id": "p0-014", "start": 760, "end": 763, "text": "492", "category": "FINANCIAL", "subtype": "cvv", "confidence": 0.98, "mask": "[CVV]"},
+        {"span_id": "p0-015", "start": 785, "end": 812, "text": "US39 OBAK 0123 4567 8901 23", "category": "FINANCIAL", "subtype": "iban", "confidence": 0.99, "mask": "[IBAN]"},
+        {"span_id": "p0-016", "start": 830, "end": 874, "text": "742 Evergreen Terrace, Springfield, OR 97477", "category": "PII", "subtype": "address", "confidence": 0.98, "mask": "[ADDRESS]"},
+        {"span_id": "p0-017", "start": 917, "end": 930, "text": "Sarah Jenkins", "category": "PII", "subtype": "full_name", "confidence": 0.96, "mask": "[FULL_NAME]"},
+        {"span_id": "p0-018", "start": 1003, "end": 1007, "text": "9081", "category": "FINANCIAL", "subtype": "partial_card_last4", "confidence": 0.95, "mask": "[CARD_LAST4]"},
+        {"span_id": "p0-019", "start": 1020, "end": 1033, "text": "Sarah Jenkins", "category": "PII", "subtype": "full_name", "confidence": 0.96, "mask": "[FULL_NAME]"},
+        {"span_id": "p0-020", "start": 1040, "end": 1054, "text": "April 12, 1988", "category": "PII", "subtype": "date_of_birth", "confidence": 0.96, "mask": "[DOB]"},
+        {"span_id": "p0-021", "start": 1067, "end": 1077, "text": "Agent 4092", "category": "INTERNAL", "subtype": "agent_id", "confidence": 0.90, "mask": "[AGENT_ID]"},
+        {"span_id": "p0-022", "start": 1085, "end": 1096, "text": "Ms. Jenkins", "category": "PII", "subtype": "full_name_ref", "confidence": 0.92, "mask": "[FULL_NAME_REF]"},
+        {"span_id": "p0-023", "start": 1229, "end": 1232, "text": "SSN", "category": "PII", "subtype": "ssn_reference", "confidence": 0.75, "mask": "[SSN_REF]"},
+        {"span_id": "p0-024", "start": 1245, "end": 1258, "text": "Sarah Jenkins", "category": "PII", "subtype": "full_name", "confidence": 0.96, "mask": "[FULL_NAME]"},
+        {"span_id": "p0-025", "start": 1270, "end": 1319, "text": "742 Evergreen Terrace, Springfield, Oregon, 97477", "category": "PII", "subtype": "address", "confidence": 0.98, "mask": "[ADDRESS]"},
+        {"span_id": "p0-026", "start": 1353, "end": 1357, "text": "1049", "category": "PII", "subtype": "ssn_last4", "confidence": 0.95, "mask": "[SSN_LAST4]"},
+        {"span_id": "p0-027", "start": 1370, "end": 1380, "text": "Agent 4092", "category": "INTERNAL", "subtype": "agent_id", "confidence": 0.90, "mask": "[AGENT_ID]"},
+        {"span_id": "p0-028", "start": 1393, "end": 1398, "text": "Sarah", "category": "PII", "subtype": "full_name_ref", "confidence": 0.90, "mask": "[FULL_NAME_REF]"},
+        {"span_id": "p0-029", "start": 1487, "end": 1506, "text": "4532-8910-4321-9081", "category": "FINANCIAL", "subtype": "credit_card", "confidence": 0.99, "mask": "[CREDIT_CARD]"},
+        {"span_id": "p0-030", "start": 1519, "end": 1532, "text": "Sarah Jenkins", "category": "PII", "subtype": "full_name", "confidence": 0.96, "mask": "[FULL_NAME]"},
+        {"span_id": "p0-031", "start": 1596, "end": 1624, "text": "s.jenkins88@example-mail.com", "category": "PII", "subtype": "email", "confidence": 0.99, "mask": "[EMAIL]"},
+        {"span_id": "p0-032", "start": 1639, "end": 1651, "text": "555-382-9102", "category": "PII", "subtype": "phone", "confidence": 0.99, "mask": "[PHONE]"},
+        {"span_id": "p0-033", "start": 1664, "end": 1674, "text": "Agent 4092", "category": "INTERNAL", "subtype": "agent_id", "confidence": 0.90, "mask": "[AGENT_ID]"},
+        {"span_id": "p0-034", "start": 1727, "end": 1754, "text": "US39 OBAK 0123 4567 8901 23", "category": "FINANCIAL", "subtype": "iban", "confidence": 0.99, "mask": "[IBAN]"}
+      ],
+      "redacted_text_with_masks": "================================================================================\nCUSTOMER SUPPORT & DSAR REQUEST LOGS - TEST DATASET\n================================================================================\n\nRECORD ID: [RECORD_ID]\nTIMESTAMP: 2026-10-14T09:14:22Z\nAGENT ID: [AGENT_ID]\n\n[CUSTOMER PROFILE]\nFull Name: [FULL_NAME]\nDate of Birth: [DOB]\nSocial Security Number / National ID: [SSN]\nPrimary Phone: [PHONE]\nSecondary Phone: [PHONE]\nEmail Address: [EMAIL]\nResidential Address: [ADDRESS]\nIP Address: [IP_ADDRESS] / [IP_ADDRESS]\n\n[FINANCIAL DETAILS]\nCredit Card Number: [CREDIT_CARD]\nCard Expiration: [CARD_EXPIRATION]\nCVV: [CVV]\nBank Account (IBAN): [IBAN]\nBilling Address: [ADDRESS]\n\n[CUSTOMER SUPPORT TRANSCRIPT]\n[09:14:22] [FULL_NAME]: Hi, I'm calling regarding an unexpected charge on my account ending in [CARD_LAST4]. My name is [FULL_NAME], born [DOB].\n[09:15:02] [AGENT_ID]: Hello [FULL_NAME_REF]. I can help with that. To verify your identity, could you please confirm your full billing address and the last four digits of your [SSN_REF]?\n[09:15:20] [FULL_NAME]: Yes, it's [ADDRESS], and the last four of my SSN are [SSN_LAST4].\n[09:16:05] [AGENT_ID]: Thank you, [FULL_NAME_REF]. I have pulled up your record. I see the charge made on 2026-10-10 using your visa card [CREDIT_CARD].\n[09:16:40] [FULL_NAME]: Right, that wasn't me. Please send the refund confirmation to [EMAIL] or text me at [PHONE].\n[09:17:10] [AGENT_ID]: I have initiated the chargeback to your account at [IBAN]. You will receive a confirmation email shortly.\n\n--------\n",
+      "overlap_merge_notes": [
+        "No character-overlapping spans required merging on page 0; repeated values are separate occurrences and were kept as independent spans.",
+        "Address value '742 Evergreen Terrace, Springfield, OR 97477' appears in Residential Address, Billing Address, and transcript variants; all use [ADDRESS].",
+        "Names appear as full name, transcript short form, and honorific short reference; masks use [FULL_NAME] or [FULL_NAME_REF] consistently.",
+        "Credit-card full number appears in Financial Details and transcript; last-four '9081' is a partial-card reference and uses [CARD_LAST4].",
+        "SSN appears as full SSN and last-four reference; independent spans, masks [SSN] and [SSN_LAST4]."
+      ]
+    },
+    {
+      "index": 1,
+      "page_id": "f7e0ec0e37f8a4e389add48d69ecdebaa4417933b5439350648c868c922e7110",
+      "page_hash": "5d35c1f541bde29be6af9472873345af031a216c7e9b2cd75019a10d14275eb8",
+      "redaction_map": [
+        {"span_id": "p1-001", "start": 85, "end": 99, "text": "REC-2026-08913", "category": "INTERNAL", "subtype": "record_id", "confidence": 0.88, "mask": "[RECORD_ID]"},
+        {"span_id": "p1-002", "start": 142, "end": 152, "text": "AGENT_1022", "category": "INTERNAL", "subtype": "agent_id", "confidence": 0.90, "mask": "[AGENT_ID]"},
+        {"span_id": "p1-003", "start": 184, "end": 209, "text": "Dr. Marcus Aurelius Vance", "category": "PII", "subtype": "full_name", "confidence": 0.99, "mask": "[FULL_NAME]"},
+        {"span_id": "p1-004", "start": 225, "end": 235, "text": "1975-11-30", "category": "PII", "subtype": "date_of_birth", "confidence": 0.99, "mask": "[DOB]"},
+        {"span_id": "p1-005", "start": 253, "end": 262, "text": "N89201492", "category": "PII", "subtype": "passport_number", "confidence": 0.99, "mask": "[PASSPORT_NUMBER]"},
+        {"span_id": "p1-006", "start": 284, "end": 297, "text": "DL-8830192-OR", "category": "PII", "subtype": "drivers_license", "confidence": 0.99, "mask": "[DRIVERS_LICENSE]"},
+        {"span_id": "p1-007", "start": 313, "end": 330, "text": "+1 (555) 712-4091", "category": "PII", "subtype": "phone", "confidence": 0.99, "mask": "[PHONE]"},
+        {"span_id": "p1-008", "start": 346, "end": 376, "text": "m.vance@vanceresearch-labs.org", "category": "PII", "subtype": "email", "confidence": 0.99, "mask": "[EMAIL]"},
+        {"span_id": "p1-009", "start": 391, "end": 439, "text": "100 Cyberdyne Way, Suite 400, Portland, OR 97201", "category": "PII", "subtype": "address", "confidence": 0.98, "mask": "[ADDRESS]"},
+        {"span_id": "p1-010", "start": 497, "end": 506, "text": "MC-9021-X", "category": "HEALTH", "subtype": "medical_case_ref", "confidence": 0.95, "mask": "[MEDICAL_CASE_REF]"},
+        {"span_id": "p1-011", "start": 526, "end": 536, "text": "MEM-309182", "category": "HEALTH", "subtype": "member_id", "confidence": 0.95, "mask": "[MEMBER_ID]"},
+        {"span_id": "p1-012", "start": 544, "end": 593, "text": "Customer requested emergency dispensation update.", "category": "HEALTH", "subtype": "health_request_context", "confidence": 0.70, "mask": "[HEALTH_CONTEXT]"},
+        {"span_id": "p1-013", "start": 594, "end": 603, "text": "Dr. Vance", "category": "PII", "subtype": "full_name_ref", "confidence": 0.92, "mask": "[FULL_NAME_REF]"},
+        {"span_id": "p1-014", "start": 623, "end": 641, "text": "penicillin allergy", "category": "HEALTH", "subtype": "allergy", "confidence": 0.94, "mask": "[ALLERGY]"},
+        {"span_id": "p1-015", "start": 681, "end": 693, "text": "Hypertension", "category": "HEALTH", "subtype": "health_condition", "confidence": 0.94, "mask": "[HEALTH_CONDITION]"},
+        {"span_id": "p1-016", "start": 716, "end": 727, "text": "Elena Vance", "category": "CONTACT", "subtype": "emergency_contact_name", "confidence": 0.96, "mask": "[EMERGENCY_CONTACT_NAME]"},
+        {"span_id": "p1-017", "start": 729, "end": 735, "text": "Spouse", "category": "CONTACT", "subtype": "relationship", "confidence": 0.90, "mask": "[RELATIONSHIP]"},
+        {"span_id": "p1-018", "start": 750, "end": 762, "text": "555-712-4099", "category": "CONTACT", "subtype": "emergency_contact_phone", "confidence": 0.99, "mask": "[PHONE]"}
+      ],
+      "redacted_text_with_masks": "------------------------------------------------------------------------\n\nRECORD ID: [RECORD_ID]\nTIMESTAMP: 2026-10-14T11:02:15Z\nAGENT ID: [AGENT_ID]\n\n[CUSTOMER PROFILE]\nFull Name: [FULL_NAME]\nDate of Birth: [DOB]\nPassport Number: [PASSPORT_NUMBER]\nDriver's License ID: [DRIVERS_LICENSE]\nPrimary Phone: [PHONE]\nEmail Address: [EMAIL]\nWork Address: [ADDRESS]\n\n[INTERNAL NOTES & HEALTH INFORMATION]\nMedical Case Ref: [MEDICAL_CASE_REF]\nPatient/Member ID: [MEMBER_ID]\nNotes: [HEALTH_CONTEXT] [FULL_NAME_REF] noted a history of [ALLERGY] and recent prescription adjustment for [HEALTH_CONDITION]. Emergency contact is [EMERGENCY_CONTACT_NAME] ([RELATIONSHIP]) reachable at [PHONE].\n\n================================================================================\nEND OF TEST DATA FILE",
+      "overlap_merge_notes": [
+        "No character-overlapping spans required merging on page 1; health, contact, and identifier fields are distinct spans.",
+        "Customer full name and doctor short reference are separate spans; masks use [FULL_NAME] and [FULL_NAME_REF].",
+        "Health context, allergy, and condition are separate health-category spans to preserve downstream consent/DSAR handling.",
+        "Emergency-contact name, relationship, and phone are contact-category spans and remain distinct from customer primary phone.",
+        "Medical case reference and member ID are separate health identifiers and were not merged."
+      ]
+    }
+  ]
+}
+
+[AGENT] @ 2026-10-15 14:28:06:
+```json
+{
+    "caveats": [
+        "Token usage is tracked at the agent level. Counts include usage from any downstream agents called on this agent's behalf.",
+        "Token counts are approximate and estimated using tiktoken.",
+        "time_taken_in_seconds includes overhead from Langchain and Neuro SAN"
+    ],
+    "completion_tokens": 25901,
+    "empty_responses": 0,
+    "prompt_tokens": 1203,
+    "successful_requests": 1,
+    "time_taken_in_seconds": 55.967705965042114,
+    "total_cost": 0.0,
+    "total_tokens": 27104
+}
+```
+
+[SYSTEM] @ 2026-10-15 22:53:57:
+
+You are part of a team of assistants in hitl_document_redaction_obfuscation_network.
+Only answer inquiries that are directly within your area of expertise.
+Do not try to help for other matters.
+Do not mention what you can NOT do. Only mention what you can do.
+ You are part of a demo system, so when queried, make up a realistic response as if you are actually grounded in real data or you are operating a real application API or microservice. 
+You are agent.
+
+
+[HUMAN] @ 2026-10-15 22:53:57:
+The inquiry is 'Fulfill: Here is the raw text content. Detect and classify sensitive spans (PII, PHI, PCI, credentials, legal/health IDs) and return a span-level redaction manifest with offsets, categories, confidence, and recommended actions.
+
+---BEGIN RAW TEXT---
+================================================================================
+CUSTOMER SUPPORT & DSAR REQUEST LOGS - TEST DATASET
+================================================================================
+
+RECORD ID: REC-2026-08912
+TIMESTAMP: 2026-10-14T09:14:22Z
+AGENT ID: AGENT_4092
+
+[CUSTOMER PROFILE]
+Full Name: Sarah Elizabeth Jenkins
+Date of Birth: 1988-04-12
+Social Security Number / National ID: 483-92-1049
+Primary Phone: +1 (555) 382-9102
+Secondary Phone: +1 (555) 902-1148
+Email Address: s.jenkins88@example-mail.com
+Residential Address: 742 Evergreen Terrace, Springfield, OR 97477
+IP Address: 192.168.1.142 / 2001:0db8:85a3:0000:0000:8a2e:0370:7334
+
+[FINANCIAL DETAILS]
+Credit Card Number: 4532-8910-4321-9081
+Card Expiration: 08/28
+CVV: 492
+Bank Account (IBAN): US39 OBAK 0123 4567 8901 23
+Billing Address: 742 Evergreen Terrace, Springfield, OR 97477
+
+[CUSTOMER SUPPORT TRANSCRIPT]
+[09:14:22] Sarah Jenkins: Hi, I'm calling regarding an unexpected charge on my account ending in 9081. My name is Sarah Jenkins, born April 12, 1988.
+[09:15:02] Agent 4092: Hello Ms. Jenkins. I can help with that. To verify your identity, could you please confirm your full billing address and the last four digits of your SSN?
+[09:15:20] Sarah Jenkins: Yes, it's 742 Evergreen Terrace, Springfield, Oregon, 97477, and the last four of my SSN are 1049.
+[09:16:05] Agent 4092: Thank you, Sarah. I have pulled up your record. I see the charge made on 2026-10-10 using your visa card 4532-8910-4321-9081.
+[09:16:40] Sarah Jenkins: Right, that wasn't me. Please send the refund confirmation to s.jenkins88@example-mail.com or text me at 555-382-9102.
+[09:17:10] Agent 4092: I have initiated the chargeback to your account at US39 OBAK 0123 4567 8901 23. You will receive a confirmation email shortly.
+
+--------------------------------------------------------------------------------
+
+RECORD ID: REC-2026-08913
+TIMESTAMP: 2026-10-14T11:02:15Z
+AGENT ID: AGENT_1022
+
+[CUSTOMER PROFILE]
+Full Name: Dr. Marcus Aurelius Vance
+Date of Birth: 1975-11-30
+Passport Number: N89201492
+Driver's License ID: DL-8830192-OR
+Primary Phone: +1 (555) 712-4091
+Email Address: m.vance@vanceresearch-labs.org
+Work Address: 100 Cyberdyne Way, Suite 400, Portland, OR 97201
+
+[INTERNAL NOTES & HEALTH INFORMATION]
+Medical Case Ref: MC-9021-X
+Patient/Member ID: MEM-309182
+Notes: Customer requested emergency dispensation update. Dr. Vance noted a history of penicillin allergy and recent prescription adjustment for Hypertension. Emergency contact is Elena Vance (Spouse) reachable at 555-712-4099.
+
+================================================================================
+END OF TEST DATA FILE
+================================================================================
+---END RAW TEXT---'.
+The mode is 'Fulfill'.
+
+[AI] @ 2026-10-15 22:54:25:
+{
+  "manifest_version": "1.0",
+  "mode": "Fulfill",
+  "offset_basis": "0-based, end-exclusive, relative to RAW_TEXT payload after BEGIN RAW TEXT marker",
+  "source": "CUSTOMER SUPPORT & DSAR REQUEST LOGS - TEST DATASET",
+  "span_count": 50,
+  "spans": [
+    {
+      "span_id": "S001",
+      "line": 5,
+      "start": 226,
+      "end": 240,
+      "text": "REC-2026-08912",
+      "category": "INTERNAL_ID",
+      "subcategory": "RECORD_ID",
+      "confidence": 0.95,
+      "recommended_action": "pseudonymize"
+    },
+    {
+      "span_id": "S002",
+      "line": 7,
+      "start": 283,
+      "end": 293,
+      "text": "AGENT_4092",
+      "category": "CREDENTIAL",
+      "subcategory": "AGENT_ID",
+      "confidence": 0.90,
+      "recommended_action": "pseudonymize"
+    },
+    {
+      "span_id": "S003",
+      "line": 10,
+      "start": 325,
+      "end": 348,
+      "text": "Sarah Elizabeth Jenkins",
+      "category": "PII",
+      "subcategory": "NAME",
+      "confidence": 0.99,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S004",
+      "line": 11,
+      "start": 364,
+      "end": 374,
+      "text": "1988-04-12",
+      "category": "PII",
+      "subcategory": "DATE_OF_BIRTH",
+      "confidence": 0.99,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S005",
+      "line": 12,
+      "start": 413,
+      "end": 424,
+      "text": "483-92-1049",
+      "category": "LEGAL_ID",
+      "subcategory": "SSN",
+      "confidence": 0.99,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S006",
+      "line": 13,
+      "start": 440,
+      "end": 457,
+      "text": "+1 (555) 382-9102",
+      "category": "PII",
+      "subcategory": "PHONE",
+      "confidence": 0.98,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S007",
+      "line": 14,
+      "start": 475,
+      "end": 492,
+      "text": "+1 (555) 902-1148",
+      "category": "PII",
+      "subcategory": "PHONE",
+      "confidence": 0.98,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S008",
+      "line": 15,
+      "start": 508,
+      "end": 536,
+      "text": "s.jenkins88@example-mail.com",
+      "category": "PII",
+      "subcategory": "EMAIL",
+      "confidence": 0.99,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S009",
+      "line": 16,
+      "start": 558,
+      "end": 602,
+      "text": "742 Evergreen Terrace, Springfield, OR 97477",
+      "category": "PII",
+      "subcategory": "ADDRESS",
+      "confidence": 0.98,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S010",
+      "line": 17,
+      "start": 615,
+      "end": 628,
+      "text": "192.168.1.142",
+      "category": "PII",
+      "subcategory": "IPV4",
+      "confidence": 0.99,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S011",
+      "line": 17,
+      "start": 631,
+      "end": 670,
+      "text": "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
+      "category": "PII",
+      "subcategory": "IPV6",
+      "confidence": 0.99,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S012",
+      "line": 20,
+      "start": 712,
+      "end": 731,
+      "text": "4532-8910-4321-9081",
+      "category": "PCI",
+      "subcategory": "CREDIT_CARD_NUMBER",
+      "confidence": 0.99,
+      "recommended_action": "mask"
+    },
+    {
+      "span_id": "S013",
+      "line": 21,
+      "start": 749,
+      "end": 754,
+      "text": "08/28",
+      "category": "PCI",
+      "subcategory": "CARD_EXPIRATION",
+      "confidence": 0.99,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S014",
+      "line": 22,
+      "start": 760,
+      "end": 763,
+      "text": "492",
+      "category": "PCI",
+      "subcategory": "CVV",
+      "confidence": 0.99,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S015",
+      "line": 23,
+      "start": 785,
+      "end": 812,
+      "text": "US39 OBAK 0123 4567 8901 23",
+      "category": "PCI",
+      "subcategory": "IBAN",
+      "confidence": 0.99,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S016",
+      "line": 24,
+      "start": 830,
+      "end": 874,
+      "text": "742 Evergreen Terrace, Springfield, OR 97477",
+      "category": "PII",
+      "subcategory": "ADDRESS",
+      "confidence": 0.98,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S017",
+      "line": 27,
+      "start": 917,
+      "end": 930,
+      "text": "Sarah Jenkins",
+      "category": "PII",
+      "subcategory": "NAME",
+      "confidence": 0.98,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S018",
+      "line": 27,
+      "start": 1003,
+      "end": 1007,
+      "text": "9081",
+      "category": "PCI",
+      "subcategory": "PARTIAL_CARD_PAN",
+      "confidence": 0.90,
+      "recommended_action": "mask"
+    },
+    {
+      "span_id": "S019",
+      "line": 27,
+      "start": 1020,
+      "end": 1033,
+      "text": "Sarah Jenkins",
+      "category": "PII",
+      "subcategory": "NAME",
+      "confidence": 0.98,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S020",
+      "line": 27,
+      "start": 1040,
+      "end": 1054,
+      "text": "April 12, 1988",
+      "category": "PII",
+      "subcategory": "DATE_OF_BIRTH",
+      "confidence": 0.98,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S021",
+      "line": 28,
+      "start": 1067,
+      "end": 1077,
+      "text": "Agent 4092",
+      "category": "CREDENTIAL",
+      "subcategory": "AGENT_ID",
+      "confidence": 0.90,
+      "recommended_action": "pseudonymize"
+    },
+    {
+      "span_id": "S022",
+      "line": 28,
+      "start": 1085,
+      "end": 1096,
+      "text": "Ms. Jenkins",
+      "category": "PII",
+      "subcategory": "NAME",
+      "confidence": 0.95,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S023",
+      "line": 29,
+      "start": 1245,
+      "end": 1258,
+      "text": "Sarah Jenkins",
+      "category": "PII",
+      "subcategory": "NAME",
+      "confidence": 0.98,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S024",
+      "line": 29,
+      "start": 1270,
+      "end": 1319,
+      "text": "742 Evergreen Terrace, Springfield, Oregon, 97477",
+      "category": "PII",
+      "subcategory": "ADDRESS",
+      "confidence": 0.98,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S025",
+      "line": 29,
+      "start": 1353,
+      "end": 1357,
+      "text": "1049",
+      "category": "LEGAL_ID",
+      "subcategory": "SSN_LAST4",
+      "confidence": 0.95,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S026",
+      "line": 30,
+      "start": 1370,
+      "end": 1380,
+      "text": "Agent 4092",
+      "category": "CREDENTIAL",
+      "subcategory": "AGENT_ID",
+      "confidence": 0.90,
+      "recommended_action": "pseudonymize"
+    },
+    {
+      "span_id": "S027",
+      "line": 30,
+      "start": 1393,
+      "end": 1398,
+      "text": "Sarah",
+      "category": "PII",
+      "subcategory": "NAME",
+      "confidence": 0.95,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S028",
+      "line": 30,
+      "start": 1487,
+      "end": 1506,
+      "text": "4532-8910-4321-9081",
+      "category": "PCI",
+      "subcategory": "CREDIT_CARD_NUMBER",
+      "confidence": 0.99,
+      "recommended_action": "mask"
+    },
+    {
+      "span_id": "S029",
+      "line": 31,
+      "start": 1519,
+      "end": 1532,
+      "text": "Sarah Jenkins",
+      "category": "PII",
+      "subcategory": "NAME",
+      "confidence": 0.98,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S030",
+      "line": 31,
+      "start": 1596,
+      "end": 1624,
+      "text": "s.jenkins88@example-mail.com",
+      "category": "PII",
+      "subcategory": "EMAIL",
+      "confidence": 0.99,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S031",
+      "line": 31,
+      "start": 1639,
+      "end": 1651,
+      "text": "555-382-9102",
+      "category": "PII",
+      "subcategory": "PHONE",
+      "confidence": 0.98,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S032",
+      "line": 32,
+      "start": 1664,
+      "end": 1674,
+      "text": "Agent 4092",
+      "category": "CREDENTIAL",
+      "subcategory": "AGENT_ID",
+      "confidence": 0.90,
+      "recommended_action": "pseudonymize"
+    },
+    {
+      "span_id": "S033",
+      "line": 32,
+      "start": 1727,
+      "end": 1754,
+      "text": "US39 OBAK 0123 4567 8901 23",
+      "category": "PCI",
+      "subcategory": "IBAN",
+      "confidence": 0.99,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S034",
+      "line": 35,
+      "start": 1896,
+      "end": 1910,
+      "text": "REC-2026-08913",
+      "category": "INTERNAL_ID",
+      "subcategory": "RECORD_ID",
+      "confidence": 0.95,
+      "recommended_action": "pseudonymize"
+    },
+    {
+      "span_id": "S035",
+      "line": 37,
+      "start": 1953,
+      "end": 1963,
+      "text": "AGENT_1022",
+      "category": "CREDENTIAL",
+      "subcategory": "AGENT_ID",
+      "confidence": 0.90,
+      "recommended_action": "pseudonymize"
+    },
+    {
+      "span_id": "S036",
+      "line": 40,
+      "start": 1995,
+      "end": 2020,
+      "text": "Dr. Marcus Aurelius Vance",
+      "category": "PII",
+      "subcategory": "NAME",
+      "confidence": 0.99,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S037",
+      "line": 41,
+      "start": 2036,
+      "end": 2046,
+      "text": "1975-11-30",
+      "category": "PII",
+      "subcategory": "DATE_OF_BIRTH",
+      "confidence": 0.99,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S038",
+      "line": 42,
+      "start": 2064,
+      "end": 2073,
+      "text": "N89201492",
+      "category": "LEGAL_ID",
+      "subcategory": "PASSPORT_NUMBER",
+      "confidence": 0.99,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S039",
+      "line": 43,
+      "start": 2095,
+      "end": 2108,
+      "text": "DL-8830192-OR",
+      "category": "LEGAL_ID",
+      "subcategory": "DRIVER_LICENSE",
+      "confidence": 0.99,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S040",
+      "line": 44,
+      "start": 2124,
+      "end": 2141,
+      "text": "+1 (555) 712-4091",
+      "category": "PII",
+      "subcategory": "PHONE",
+      "confidence": 0.98,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S041",
+      "line": 45,
+      "start": 2157,
+      "end": 2187,
+      "text": "m.vance@vanceresearch-labs.org",
+      "category": "PII",
+      "subcategory": "EMAIL",
+      "confidence": 0.99,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S042",
+      "line": 46,
+      "start": 2202,
+      "end": 2250,
+      "text": "100 Cyberdyne Way, Suite 400, Portland, OR 97201",
+      "category": "PII",
+      "subcategory": "ADDRESS",
+      "confidence": 0.98,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S043",
+      "line": 49,
+      "start": 2308,
+      "end": 2317,
+      "text": "MC-9021-X",
+      "category": "PHI",
+      "subcategory": "MEDICAL_CASE_REF",
+      "confidence": 0.99,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S044",
+      "line": 50,
+      "start": 2337,
+      "end": 2347,
+      "text": "MEM-309182",
+      "category": "PHI",
+      "subcategory": "PATIENT_MEMBER_ID",
+      "confidence": 0.99,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S045",
+      "line": 51,
+      "start": 2405,
+      "end": 2414,
+      "text": "Dr. Vance",
+      "category": "PII",
+      "subcategory": "NAME",
+      "confidence": 0.98,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S046",
+      "line": 51,
+      "start": 2434,
+      "end": 2452,
+      "text": "penicillin allergy",
+      "category": "PHI",
+      "subcategory": "MEDICAL_CONDITION",
+      "confidence": 0.97,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S047",
+      "line": 51,
+      "start": 2492,
+      "end": 2504,
+      "text": "Hypertension",
+      "category": "PHI",
+      "subcategory": "MEDICAL_CONDITION",
+      "confidence": 0.97,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S048",
+      "line": 51,
+      "start": 2527,
+      "end": 2538,
+      "text": "Elena Vance",
+      "category": "PII",
+      "subcategory": "NAME",
+      "confidence": 0.98,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S049",
+      "line": 51,
+      "start": 2539,
+      "end": 2547,
+      "text": "(Spouse)",
+      "category": "PII",
+      "subcategory": "RELATIONSHIP",
+      "confidence": 0.90,
+      "recommended_action": "redact"
+    },
+    {
+      "span_id": "S050",
+      "line": 51,
+      "start": 2561,
+      "end": 2573,
+      "text": "555-712-4099",
+      "category": "PII",
+      "subcategory": "PHONE",
+      "confidence": 0.98,
+      "recommended_action": "redact"
+    }
+  ]
+}
+
+[AGENT] @ 2026-10-15 22:54:25:
+```json
+{
+    "caveats": [
+        "Token usage is tracked at the agent level. Counts include usage from any downstream agents called on this agent's behalf.",
+        "Token counts are approximate and estimated using tiktoken.",
+        "time_taken_in_seconds includes overhead from Langchain and Neuro SAN"
+    ],
+    "completion_tokens": 26560,
+    "empty_responses": 0,
+    "prompt_tokens": 1001,
+    "successful_requests": 1,
+    "time_taken_in_seconds": 28.177578926086426,
+    "total_cost": 0.0,
+    "total_tokens": 27561
+}
+```

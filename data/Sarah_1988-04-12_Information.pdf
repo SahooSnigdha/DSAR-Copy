@@ -1,0 +1,43 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 4 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 5 0 R /Resources << /Font << /F1 7 0 R >> >> >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 6 0 R /Resources << /Font << /F1 7 0 R >> >> >>
+endobj
+5 0 obj
+<< /Length 2542 >>
+stream
+BT /F1 10 Tf 50 740 Td 13 TL (================================================================================) Tj T* (CUSTOMER SUPPORT & DSAR REQUEST LOGS - TEST DATASET) Tj T* (================================================================================) Tj T* () Tj T* (RECORD ID: REC-2026-08912) Tj T* (TIMESTAMP: 2026-10-14T09:14:22Z) Tj T* (AGENT ID: AGENT_4092) Tj T* () Tj T* ([CUSTOMER PROFILE]) Tj T* (Full Name: Sarah Elizabeth Jenkins) Tj T* (Date of Birth: 1988-04-12) Tj T* (Social Security Number / National ID: 483-92-1049) Tj T* (Primary Phone: +1 \(555\) 382-9102) Tj T* (Secondary Phone: +1 \(555\) 902-1148) Tj T* (Email Address: s.jenkins88@example-mail.com) Tj T* (Residential Address: 742 Evergreen Terrace, Springfield, OR 97477) Tj T* (IP Address: 192.168.1.142 / 2001:0db8:85a3:0000:0000:8a2e:0370:7334) Tj T* () Tj T* ([FINANCIAL DETAILS]) Tj T* (Credit Card Number: 4532-8910-4321-9081) Tj T* (Card Expiration: 08/28) Tj T* (CVV: 492) Tj T* (Bank Account \(IBAN\): US39 OBAK 0123 4567 8901 23) Tj T* (Billing Address: 742 Evergreen Terrace, Springfield, OR 97477) Tj T* () Tj T* ([CUSTOMER SUPPORT TRANSCRIPT]) Tj T* ([09:14:22] Sarah Jenkins: Hi, I'm calling regarding an unexpected charge on my account ending in 9081. My name is Sarah Jenkins, born April 12, 1988.) Tj T* ([09:15:02] Agent 4092: Hello Ms. Jenkins. I can help with that. To verify your identity, could you please confirm your full billing address and the last four digits of your SSN?) Tj T* ([09:15:20] Sarah Jenkins: Yes, it's 742 Evergreen Terrace, Springfield, Oregon, 97477, and the last four of my SSN are 1049.) Tj T* ([09:16:05] Agent 4092: Thank you, Sarah. I have pulled up your record. I see the charge made on 2026-10-10 using your visa card 4532-8910-4321-9081.) Tj T* ([09:16:40] Sarah Jenkins: Right, that wasn't me. Please send the refund confirmation to s.jenkins88@example-mail.com or text me at 555-382-9102.) Tj T* ([09:17:10] Agent 4092: I have initiated the chargeback to your account at US39 OBAK 0123 4567 8901 23. You will receive a confirmation email shortly.) Tj T* () Tj T* (--------------------------------------------------------------------------------) Tj T* () Tj T* (RECORD ID: REC-2026-08913) Tj T* (TIMESTAMP: 2026-10-14T11:02:15Z) Tj T* (AGENT ID: AGENT_1022) Tj T* () Tj T* ([CUSTOMER PROFILE]) Tj T* (Full Name: Dr. Marcus Aurelius Vance) Tj T* (Date of Birth: 1975-11-30) Tj T* (Passport Number: N89201492) Tj T* (Driver's License ID: DL-8830192-OR) Tj T* (Primary Phone: +1 \(555\) 712-4091) Tj T* ET
+endstream
+endobj
+6 0 obj
+<< /Length 739 >>
+stream
+BT /F1 10 Tf 50 740 Td 13 TL (Email Address: m.vance@vanceresearch-labs.org) Tj T* (Work Address: 100 Cyberdyne Way, Suite 400, Portland, OR 97201) Tj T* () Tj T* ([INTERNAL NOTES & HEALTH INFORMATION]) Tj T* (Medical Case Ref: MC-9021-X) Tj T* (Patient/Member ID: MEM-309182) Tj T* (Notes: Customer requested emergency dispensation update. Dr. Vance noted a history of penicillin allergy and recent prescription adjustment for Hypertension. Emergency contact is Elena Vance \(Spouse\) reachable at 555-712-4099.) Tj T* () Tj T* (================================================================================) Tj T* (END OF TEST DATA FILE) Tj T* (================================================================================) Tj T* ET
+endstream
+endobj
+7 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 8
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000121 00000 n 
+0000000247 00000 n 
+0000000373 00000 n 
+0000002967 00000 n 
+0000003757 00000 n 
+trailer
+<< /Size 8 /Root 1 0 R >>
+startxref
+3827
+%%EOF

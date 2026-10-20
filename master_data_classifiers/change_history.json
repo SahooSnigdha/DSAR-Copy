@@ -1,0 +1,36 @@
+{
+  "active_revision_id": "rev-003",
+  "history": [
+    {
+      "revision_id": "rev-003",
+      "ruleset_version": "1.2.0",
+      "actor": "Human Admin",
+      "actor_id": "ADMIN-ROOT-001",
+      "timestamp": "2026-10-19T15:40:00Z",
+      "approval_token": "AUTH-TOKEN-ADMIN-REV3-APPROVED-20261019-ROOT",
+      "action": "UPDATE_PINNED_REVISION",
+      "diff": {
+        "operation": "UPDATE",
+        "classifiers_added": 13,
+        "classifiers_removed": 0,
+        "classifiers_modified": 0,
+        "added_classifier_ids": [
+          "CLS-UK-SORT-CODE-001",
+          "CLS-EXT-BANK-ACCT-001",
+          "CLS-EXT-UK-SPOKEN-DOB-001",
+          "CLS-UK-POSTCODE-001",
+          "CLS-UK-PHONE-001",
+          "CLS-UK-NINO-001",
+          "CLS-UK-NHS-NUM-001",
+          "CLS-EXT-EMPLOYEE-ID-001",
+          "CLS-EXT-AGENT-NAME-001",
+          "CLS-EXT-TITLED-NAME-001",
+          "CLS-UK-DRIVING-LICENCE-001",
+          "CLS-UK-VEHICLE-PLATE-001",
+          "CLS-UK-UTR-001"
+        ]
+      },
+      "comment": "Revision 3 (rev-003) officially authorized by ADMIN-ROOT-001: promoted UK identifiers (Sort Code, Account Number, Postcode, NHS Number, NINO, Phone, Driving Licence, Plate, UTR), spoken DOB, and conversational names to authoritative pinned classifiers."
+    }
+  ]
+}
